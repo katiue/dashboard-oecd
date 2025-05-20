@@ -1,0 +1,6 @@
+# Ignore test files in production builds
+**/*.test.ts
+**/*.test.tsx
+**/*.test.js
+**/*.test.jsx
+tests/

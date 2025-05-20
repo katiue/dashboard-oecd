@@ -54,13 +54,13 @@ export function createProvider(customApiKey?: string) {
 
   return customProvider({
     languageModels: {
-      'chat-model': google('gemini-2.0-flash-exp'),
+      'chat-model': google('gemini-2.0-flash'),
       'chat-model-reasoning': wrapLanguageModel({
-        model: google('gemini-2.0-flash-exp'),
+        model: google('gemini-2.0-flash'),
         middleware: extractReasoningMiddleware({ tagName: 'think' }),
       }),
-      'title-model': google('gemini-2.0-flash-exp'),
-      'artifact-model': google('gemini-2.0-flash-exp'),
+      'title-model': google('gemini-2.0-flash'),
+      'artifact-model': google('gemini-2.0-flash'),
     },
   });
 }
