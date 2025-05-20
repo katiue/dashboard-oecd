@@ -83,47 +83,53 @@ export function ChartEditor({
     );
     return [headers.join(','), ...rows].join('\n');
   };
-
   const parseContent = (contentValue: string) => {
     try {
+      if (!contentValue || contentValue.trim() === '') {
+        return; // Skip processing empty content
+      }
+      
       const parsedContent = JSON.parse(contentValue);
-      const { csvData, randomData, charts } = parsedContent;
+      // Only use csvData and ignore randomData to prevent data replacement
+      const dataFromContent = parsedContent.csvData || '';
 
-      setCsvData(csvData || randomData || '');
+      setCsvData(dataFromContent);
 
-      if (Array.isArray(charts)) {
+      if (Array.isArray(parsedContent.charts)) {
         setChartConfigurations(
-          charts.map((chart) => ({
+          parsedContent.charts.map((chart: any) => ({
             chartType: chart.chartType,
             title: chart.title,
             description: chart.description,
-            data: chart.data || parseCSVToChartData(csvData, chart.chartType),
+            // Preserve existing data from the chart content rather than regenerating
+            data:
+              chart.data ||
+              (dataFromContent
+                ? parseCSVToChartData(dataFromContent, chart.chartType)
+                : []),
           })),
         );
       }
     } catch (e) {
+      console.error('Error parsing chart content:', e);
       // If JSON parsing fails, assume it's CSV data only
-      setCsvData(contentValue);
-      setChartConfigurations([]);
+      if (typeof contentValue === 'string') {
+        setCsvData(contentValue);
+        setChartConfigurations([]);
+      }
     }
   };
-  // Completely reset chart state when content changes or component initially renders
-  useEffect(() => {
-    // Reset chart state
-    setChartConfigurations([]);
-    setCsvData('');
 
-    if (content) {
+  // Only process content if it's present and not already processed
+  const prevContent = useRef('');
+  useEffect(() => {
+    // Check if content is different to avoid unnecessary processing
+    if (content && content.trim() !== '' && content !== prevContent.current) {
+      console.log('Processing chart content, length:', content.length);
+      prevContent.current = content;
       parseContent(content);
     }
-  }, [content, isCurrentVersion]);
-
-  // On initial mount without existing content, generate random data and create an initial chart
-  useEffect(() => {
-    if (!content && isCurrentVersion) {
-      handleGenerateRandom();
-    }
-  }, []);
+  }, [content]);
 
   const handleDataChange = (newData: string) => {
     setCsvData(newData);
@@ -139,19 +145,43 @@ export function ChartEditor({
 
     saveContent(newContent, true);
   };
-
   const parseCSVToChartData = (csv: string, chartType: string) => {
+    if (!csv || typeof csv !== 'string' || csv.trim() === '') {
+      return [];
+    }
+
     try {
       const parsed = parse(csv, { header: true });
-      const { data, meta } = parsed;
 
-      if (!data || data.length === 0 || !data[0]) return [];
+      // Ensure data is properly extracted from parsing result
+      if (
+        !parsed ||
+        !parsed.data ||
+        !Array.isArray(parsed.data) ||
+        parsed.data.length === 0
+      ) {
+        return [];
+      }
+
+      const data = parsed.data.filter(
+        (item) => item !== null && typeof item === 'object',
+      );
+      const meta = parsed.meta;
+
+      if (data.length === 0 || !data[0]) {
+        return [];
+      }
 
       // dynamic transform lookup
-      const transformFn = (ChartTransforms as any)[
-        `transformFor${chartType.charAt(0).toUpperCase() + chartType.slice(1)}Chart`
-      ];
-      return typeof transformFn === 'function' ? transformFn(data, meta) : data;
+      const transformFnName = `transformFor${chartType.charAt(0).toUpperCase() + chartType.slice(1)}Chart`;
+      const transformFn = (ChartTransforms as any)[transformFnName];
+
+      if (typeof transformFn !== 'function') {
+        console.warn(`Transform function ${transformFnName} not found`);
+        return data;
+      }
+
+      return transformFn(data, meta);
     } catch (error) {
       console.error('Error parsing CSV data:', error);
       return [];
@@ -174,29 +204,10 @@ export function ChartEditor({
       toast.success('Loaded CSV file');
     };
     reader.readAsText(file);
-  };
-
-  // generate and load random CSV data
+  }; // generate and load random CSV data - disabled
   const handleGenerateRandom = () => {
-    const randomCSV = generateRandomCSV();
-    handleDataChange(randomCSV);
-    toast.success('Generated random CSV data');
-    // auto-create a chart from random data
-    const newChart = {
-      chartType: selectedChartType,
-      title: `Random ${selectedChartType.charAt(0).toUpperCase() + selectedChartType.slice(1)} Chart`,
-      description: `Auto-generated ${selectedChartType} chart from random CSV data`,
-      data: parseCSVToChartData(randomCSV, selectedChartType),
-    };
-    const updatedCharts = [newChart, ...chartConfigurations];
-    setChartConfigurations(updatedCharts);
-    const newContent = JSON.stringify(
-      { csvData: randomCSV, charts: updatedCharts },
-      null,
-      2,
-    );
-    saveContent(newContent, false);
-    toast.success(`Added new ${selectedChartType} chart`);
+    // Function disabled as requested
+    console.log('Random data generation disabled');
   };
 
   // helper to reorder charts
@@ -317,14 +328,24 @@ export function ChartEditor({
                       </Button>
                     </div>
                   )}
-                </div>
+                </div>{' '}
                 <CardContent className="p-4">
                   <div style={{ height: 400 }}>
-                    <ChartRenderer
-                      chartType={visualization.chartType as ChartType}
-                      data={visualization.data}
-                      theme={defaultChartTheme}
-                    />
+                    {visualization.data &&
+                    Array.isArray(visualization.data) &&
+                    visualization.data.length > 0 ? (
+                      <ChartRenderer
+                        chartType={visualization.chartType as ChartType}
+                        data={visualization.data}
+                        theme={defaultChartTheme}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <p className="text-muted-foreground">
+                          No valid data for this chart
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -399,15 +420,8 @@ export function ChartEditor({
               className="font-mono flex-1 h-full min-h-[300px] resize-none"
               placeholder="Enter CSV data here..."
               disabled={!isCurrentVersion || currentVersionIndex !== -1}
-            />
-            <div className="flex justify-between items-center mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateRandom}
-              >
-                Generate Random Data
-              </Button>
+            />{' '}
+            <div className="flex justify-end items-center mt-4">
               <input
                 type="file"
                 accept=".csv"

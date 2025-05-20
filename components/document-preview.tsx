@@ -46,13 +46,19 @@ export function DocumentPreview({
   // Reset artifact state when a new document is loaded (different ID)
   useEffect(() => {
     if (result && result.id !== artifact.documentId) {
-      setArtifact((current) => ({
-        ...current,
-        content: '',
-        documentId: result.id,
-        title: result.title,
-        kind: result.kind,
-      }));
+      setArtifact((current) => {
+        // If already loading this document, don't update state
+        if (current.documentId === result.id) {
+          return current;
+        }
+        return {
+          ...current,
+          content: '',
+          documentId: result.id,
+          title: result.title,
+          kind: result.kind,
+        };
+      });
     }
   }, [result, artifact.documentId, setArtifact]);
 
@@ -171,9 +177,15 @@ const PureHitboxLayer = ({
       const boundingBox = event.currentTarget.getBoundingClientRect();
 
       setArtifact((artifact) => {
-        // Always create a fresh artifact state when clicking on a document
+        // If already visible, just return current state
+        if (artifact.isVisible && artifact.documentId === result.id) {
+          return artifact;
+        }
+        
+        // Create a new artifact state or update the existing one
         const baseArtifact = {
-          content: result.content || '',
+          // Preserve existing content if available, otherwise use result.content
+          content: artifact.content || result.content || '',
           title: result.title,
           documentId: result.id,
           kind: result.kind,
@@ -254,19 +266,23 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
 
 const DocumentContent = ({ document }: { document: Document }) => {
   const { artifact, setArtifact } = useArtifact();
+  const documentId = document?.id;
+  const documentContent = document?.content;
+  const documentKind = document?.kind;
+  const documentTitle = document?.title;
 
-  // Reset content when document ID changes to prevent state persistence between documents
+  // Only reset content when document ID changes and current content is empty
   useEffect(() => {
-    if (document?.id !== artifact.documentId) {
+    if (documentId !== artifact.documentId) {
       setArtifact((current) => ({
         ...current,
-        content: document?.content || '',
-        documentId: document?.id || 'init',
-        kind: document?.kind || 'text',
-        title: document?.title || '',
+        content: documentContent || current.content || '',
+        documentId: documentId || 'init',
+        kind: documentKind || 'text',
+        title: documentTitle || '',
       }));
     }
-  }, [document?.id, artifact.documentId, setArtifact, document]);
+  }, [documentId, artifact.documentId, setArtifact, documentContent, documentKind, documentTitle]);
 
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',

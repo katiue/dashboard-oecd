@@ -28,17 +28,29 @@ const ChartRenderer: React.FC<ChartRendererProps> = ({
   data,
   theme,
 }) => {
-  if (!data || !Array.isArray(data) || data.length === 0) {
+  // Enhanced data validation
+  if (!data || !Array.isArray(data) || data.length === 0 || !data[0]) {
     return <div>No data available for this chart</div>;
+  }
+
+  // Safety check for empty objects
+  const firstItem = data[0];
+  if (Object.keys(firstItem).length === 0) {
+    return <div>Chart data is missing required properties</div>;
   }
 
   switch (chartType) {
     case 'bar': {
-      const keys = Object.keys(data[0]).filter(
-        (k) => typeof data[0][k] === 'number',
+      const keys = Object.keys(firstItem).filter(
+        (k) => typeof firstItem[k] === 'number',
       );
+      // If no numeric properties found, provide feedback
+      if (keys.length === 0) {
+        return <div>Bar chart requires numeric data values</div>;
+      }
+
       const indexBy =
-        Object.keys(data[0]).find((k) => typeof data[0][k] === 'string') ||
+        Object.keys(firstItem).find((k) => typeof firstItem[k] === 'string') ||
         'id';
       return (
         <ResponsiveBar
