@@ -98,9 +98,9 @@ export function ChartEditor({
       if (Array.isArray(parsedContent.charts)) {
         setChartConfigurations(
           parsedContent.charts.map((chart: any) => ({
-            chartType: chart.chartType,
-            title: chart.title,
-            description: chart.description,
+            chartType: chart.chartType || 'bar',
+            title: chart.title || 'Untitled Chart',
+            description: chart.description || '',
             // Preserve existing data from the chart content rather than regenerating
             data:
               chart.data ||
@@ -166,7 +166,7 @@ export function ChartEditor({
       const data = parsed.data.filter(
         (item) => item !== null && typeof item === 'object',
       );
-      const meta = parsed.meta;
+      const meta = parsed.meta || {};
 
       if (data.length === 0 || !data[0]) {
         return [];
@@ -181,7 +181,8 @@ export function ChartEditor({
         return data;
       }
 
-      return transformFn(data, meta);
+      const transformedData = transformFn(data, meta);
+      return Array.isArray(transformedData) ? transformedData : [];
     } catch (error) {
       console.error('Error parsing CSV data:', error);
       return [];
