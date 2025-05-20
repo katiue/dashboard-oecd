@@ -12,12 +12,18 @@ type EditorProps = {
   content: string;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
   status: 'streaming' | 'idle';
-  isCurrentVersion: boolean;
-  currentVersionIndex: number;
+  isCurrentVersion?: boolean; // Make optional
+  currentVersionIndex?: number; // Make optional
   suggestions: Array<Suggestion>;
 };
 
-function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
+function PureCodeEditor({
+  content,
+  onSaveContent,
+  status,
+  currentVersionIndex = 0, // Default value
+  isCurrentVersion = true, // Default value
+}: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorView | null>(null);
 
@@ -70,11 +76,12 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
       editorRef.current.setState(newState);
     }
   }, [onSaveContent]);
-
   useEffect(() => {
     if (editorRef.current && content) {
       const currentContent = editorRef.current.state.doc.toString();
 
+      // Force editor content reset when the currentVersionIndex or content changes
+      // This prevents state persistence between different documents
       if (status === 'streaming' || currentContent !== content) {
         const transaction = editorRef.current.state.update({
           changes: {
@@ -100,9 +107,20 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
 
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
   if (prevProps.suggestions !== nextProps.suggestions) return false;
-  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
+  // Only compare currentVersionIndex if both are defined
+  if (
+    prevProps.currentVersionIndex !== undefined &&
+    nextProps.currentVersionIndex !== undefined &&
+    prevProps.currentVersionIndex !== nextProps.currentVersionIndex
+  )
     return false;
-  if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
+  // Only compare isCurrentVersion if both are defined
+  if (
+    prevProps.isCurrentVersion !== undefined &&
+    nextProps.isCurrentVersion !== undefined &&
+    prevProps.isCurrentVersion !== nextProps.isCurrentVersion
+  )
+    return false;
   if (prevProps.status === 'streaming' && nextProps.status === 'streaming')
     return false;
   if (prevProps.content !== nextProps.content) return false;

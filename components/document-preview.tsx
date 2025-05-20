@@ -21,6 +21,7 @@ import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
 import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
+import { ChartEditor } from './chart-editor';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -41,6 +42,19 @@ export function DocumentPreview({
 
   const previewDocument = useMemo(() => documents?.[0], [documents]);
   const hitboxRef = useRef<HTMLDivElement>(null);
+
+  // Reset artifact state when a new document is loaded (different ID)
+  useEffect(() => {
+    if (result && result.id !== artifact.documentId) {
+      setArtifact((current) => ({
+        ...current,
+        content: '',
+        documentId: result.id,
+        title: result.title,
+        kind: result.kind,
+      }));
+    }
+  }, [result, artifact.documentId, setArtifact]);
 
   useEffect(() => {
     const boundingBox = hitboxRef.current?.getBoundingClientRect();
@@ -156,23 +170,27 @@ const PureHitboxLayer = ({
     (event: MouseEvent<HTMLElement>) => {
       const boundingBox = event.currentTarget.getBoundingClientRect();
 
-      setArtifact((artifact) =>
-        artifact.status === 'streaming'
+      setArtifact((artifact) => {
+        // Always create a fresh artifact state when clicking on a document
+        const baseArtifact = {
+          content: result.content || '',
+          title: result.title,
+          documentId: result.id,
+          kind: result.kind,
+          isVisible: true,
+          status: artifact.status,
+          boundingBox: {
+            left: boundingBox.x,
+            top: boundingBox.y,
+            width: boundingBox.width,
+            height: boundingBox.height,
+          },
+        };
+
+        return artifact.status === 'streaming'
           ? { ...artifact, isVisible: true }
-          : {
-              ...artifact,
-              title: result.title,
-              documentId: result.id,
-              kind: result.kind,
-              isVisible: true,
-              boundingBox: {
-                left: boundingBox.x,
-                top: boundingBox.y,
-                width: boundingBox.width,
-                height: boundingBox.height,
-              },
-            },
-      );
+          : baseArtifact;
+      });
     },
     [setArtifact, result],
   );
@@ -235,7 +253,20 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
 });
 
 const DocumentContent = ({ document }: { document: Document }) => {
-  const { artifact } = useArtifact();
+  const { artifact, setArtifact } = useArtifact();
+
+  // Reset content when document ID changes to prevent state persistence between documents
+  useEffect(() => {
+    if (document?.id !== artifact.documentId) {
+      setArtifact((current) => ({
+        ...current,
+        content: document?.content || '',
+        documentId: document?.id || 'init',
+        kind: document?.kind || 'text',
+        title: document?.title || '',
+      }));
+    }
+  }, [document?.id, artifact.documentId, setArtifact, document]);
 
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
@@ -244,24 +275,28 @@ const DocumentContent = ({ document }: { document: Document }) => {
       'p-0': document.kind === 'code',
     },
   );
-
   const commonProps = {
     content: document.content ?? '',
     isCurrentVersion: true,
-    currentVersionIndex: 0,
-    status: artifact.status,
+    currentVersionIndex: 0, // Always provide a valid default
+    status: artifact.status || 'idle', // Ensure status has a default value
     saveContent: () => {},
     suggestions: [],
   };
-
   return (
     <div className={containerClassName}>
+      {' '}
       {document.kind === 'text' ? (
         <Editor {...commonProps} onSaveContent={() => {}} />
       ) : document.kind === 'code' ? (
         <div className="flex flex-1 relative w-full">
           <div className="absolute inset-0">
-            <CodeEditor {...commonProps} onSaveContent={() => {}} />
+            <CodeEditor
+              {...commonProps}
+              onSaveContent={() => {}}
+              currentVersionIndex={0} // Provide explicit currentVersionIndex
+              isCurrentVersion={true} // Ensure isCurrentVersion is always defined
+            />
           </div>
         </div>
       ) : document.kind === 'sheet' ? (
@@ -279,6 +314,18 @@ const DocumentContent = ({ document }: { document: Document }) => {
           status={artifact.status}
           isInline={true}
         />
+      ) : document.kind === 'chart' ? (
+        <div className="flex flex-1 relative size-full p-4">
+          <div className="absolute inset-0">
+            <ChartEditor
+              content={document.content ?? ''}
+              isCurrentVersion={true}
+              currentVersionIndex={0}
+              status={artifact.status}
+              saveContent={() => {}}
+            />
+          </div>
+        </div>
       ) : null}
     </div>
   );

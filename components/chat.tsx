@@ -19,6 +19,7 @@ import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
+import { useApiKey } from '@/hooks/use-api-key';
 import { ChatSDKError } from '@/lib/errors';
 
 export function Chat({
@@ -39,11 +40,13 @@ export function Chat({
   autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();
-
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
   });
+
+  // Get custom API key if available
+  const { apiKey } = useApiKey();
 
   const {
     messages,
@@ -63,7 +66,35 @@ export function Chat({
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
-    fetch: fetchWithErrorHandlers,
+    fetch: async (url, options = {}) => {
+      // If we have a custom API key, add it to the Authorization header
+      if (apiKey) {
+        console.log(
+          `Using custom API key in fetch: ${apiKey.substring(0, 5)}...`,
+        );
+
+        // Ensure headers object exists
+        if (!options.headers) {
+          options.headers = {};
+        }
+
+        // If headers is a Headers instance, convert to plain object
+        if (options.headers instanceof Headers) {
+          const plainHeaders: Record<string, string> = {};
+          options.headers.forEach((value, key) => {
+            plainHeaders[key] = value;
+          });
+          options.headers = plainHeaders;
+        }
+
+        // Add Authorization header
+        options.headers = {
+          ...options.headers,
+          Authorization: `Bearer ${apiKey}`,
+        };
+      }
+      return fetchWithErrorHandlers(url, options);
+    },
     experimental_prepareRequestBody: (body) => ({
       id,
       message: body.messages.at(-1),

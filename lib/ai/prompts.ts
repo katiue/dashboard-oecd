@@ -96,6 +96,13 @@ export const sheetPrompt = `
 You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
 `;
 
+export const chartPrompt = `
+You are a data visualization specialist. Create chart configurations based on the title prompt.
+Generate CSV data that is appropriate for visualizing with the requested chart types.
+Provide up to 6 different chart visualizations that effectively represent the data.
+For each chart, include a title, description, and appropriate chart type (bar, line, pie, heatmap, radar, or scatter).
+`;
+
 export const updateDocumentPrompt = (
   currentContent: string | null,
   type: ArtifactKind,
@@ -118,4 +125,12 @@ Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-        : '';
+        : type === 'chart'
+          ? `\
+Improve the following chart configurations based on the given prompt. 
+You can modify the CSV data and update or replace any of the chart configurations.
+Do not exceed 6 charts total.
+
+${currentContent}
+`
+          : '';

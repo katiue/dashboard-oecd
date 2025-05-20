@@ -5,6 +5,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
+import { ProviderContextProvider } from '@/lib/ai/provider-context';
+import { ApiKeySync } from '@/hooks/api-key-sync';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chat.vercel.ai'),
@@ -70,15 +72,18 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
-        <ThemeProvider
+      <body className="antialiased">        <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
+          <Toaster position="top-center" />          <SessionProvider>
+            <ProviderContextProvider>
+              <ApiKeySync />
+              {children}
+            </ProviderContextProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

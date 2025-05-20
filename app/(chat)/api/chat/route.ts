@@ -24,7 +24,7 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
-import { myProvider } from '@/lib/ai/providers';
+import { myProvider, createProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
@@ -83,10 +83,23 @@ export async function POST(request: Request) {
 
     const userType: UserType = session.user.type;
 
-    const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
-      differenceInHours: 24,
-    });
+    let messageCount = 0;
+    try {
+      messageCount = await getMessageCountByUserId({
+        id: session.user.id,
+        differenceInHours: 24,
+      });
+    } catch (error) {
+      console.error('Failed to get message count:', error);
+      // For guest users, we'll allow them to continue with a default count of 0
+      // For other user types, we should enforce the limits more strictly
+      if (userType !== 'guest') {
+        return new ChatSDKError(
+          'bad_request:database',
+          'Unable to verify message quota. Please try again later.',
+        ).toResponse();
+      }
+    }
 
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
       return new ChatSDKError('rate_limit:chat').toResponse();
@@ -95,16 +108,24 @@ export async function POST(request: Request) {
     const chat = await getChatById({ id });
 
     if (!chat) {
-      const title = await generateTitleFromUserMessage({
-        message,
-      });
+      try {
+        const title = await generateTitleFromUserMessage({
+          message,
+        });
 
-      await saveChat({
-        id,
-        userId: session.user.id,
-        title,
-        visibility: selectedVisibilityType,
-      });
+        await saveChat({
+          id,
+          userId: session.user.id,
+          title,
+          visibility: selectedVisibilityType,
+        });
+      } catch (error) {
+        console.error('Failed to create new chat:', error);
+        return new ChatSDKError(
+          'bad_request:database',
+          'Failed to save chat',
+        ).toResponse();
+      }
     } else {
       if (chat.userId !== session.user.id) {
         return new ChatSDKError('forbidden:chat').toResponse();
@@ -128,26 +149,52 @@ export async function POST(request: Request) {
       country,
     };
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: message.id,
-          role: 'user',
-          parts: message.parts,
-          attachments: message.experimental_attachments ?? [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    try {
+      await saveMessages({
+        messages: [
+          {
+            chatId: id,
+            id: message.id,
+            role: 'user',
+            parts: message.parts,
+            attachments: message.experimental_attachments ?? [],
+            createdAt: new Date(),
+          },
+        ],
+      });
+    } catch (error) {
+      console.error('Failed to save user message:', error);
+      return new ChatSDKError(
+        'bad_request:database',
+        'Failed to save message',
+      ).toResponse();
+    }
 
     const streamId = generateUUID();
-    await createStreamId({ streamId, chatId: id });
+    try {
+      await createStreamId({ streamId, chatId: id });
+    } catch (error) {
+      console.error('Failed to create stream ID:', error);
+      return new ChatSDKError(
+        'bad_request:database',
+        'Failed to create stream',
+      ).toResponse();
+    } // Check for authorization header that might contain an API key
+    const authHeader = request.headers.get('Authorization');
+    let customApiKey: string | undefined;
+
+    // If there's an Auth header in the format "Bearer API_KEY", extract the key
+    if (authHeader?.startsWith('Bearer ')) {
+      customApiKey = authHeader.substring(7);
+    }
+
+    // Create provider with custom API key if available
+    const provider = customApiKey ? createProvider(customApiKey) : myProvider;
 
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
+          model: provider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages,
           maxSteps: 5,
@@ -202,8 +249,10 @@ export async function POST(request: Request) {
                     },
                   ],
                 });
-              } catch (_) {
-                console.error('Failed to save chat');
+              } catch (error) {
+                console.error('Failed to save chat response:', error);
+                // Cannot return a response here since we're in a callback
+                // Just log the error for debugging purposes
               }
             }
           },
@@ -234,9 +283,15 @@ export async function POST(request: Request) {
       return new Response(stream);
     }
   } catch (error) {
+    console.error('Chat API error:', error);
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+    // Handle any other errors
+    return new ChatSDKError(
+      'bad_request:database',
+      'An unexpected error occurred',
+    ).toResponse();
   }
 }
 

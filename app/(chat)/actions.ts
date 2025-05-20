@@ -8,7 +8,7 @@ import {
   updateChatVisiblityById,
 } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
-import { myProvider } from '@/lib/ai/providers';
+import { myProvider, createProvider } from '@/lib/ai/providers';
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
@@ -17,20 +17,31 @@ export async function saveChatModelAsCookie(model: string) {
 
 export async function generateTitleFromUserMessage({
   message,
+  customApiKey,
 }: {
   message: UIMessage;
+  customApiKey?: string;
 }) {
-  const { text: title } = await generateText({
-    model: myProvider.languageModel('title-model'),
-    system: `\n
-    - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
-    - the title should be a summary of the user's message
-    - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
-  });
+  // Use custom provider if API key is provided
+  const provider = customApiKey ? createProvider(customApiKey) : myProvider;
 
-  return title;
+  try {
+    const { text: title } = await generateText({
+      model: provider.languageModel('title-model'),
+      system: `\n
+      - you will generate a short title based on the first message a user begins a conversation with
+      - ensure it is not more than 80 characters long
+      - the title should be a summary of the user's message
+      - do not use quotes or colons`,
+      prompt: JSON.stringify(message),
+    });
+
+    return title;
+  } catch (error) {
+    console.error('Failed to generate title:', error);
+    // Fallback to a generic title if title generation fails
+    return 'New conversation';
+  }
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
