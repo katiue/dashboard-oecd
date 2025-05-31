@@ -11,6 +11,7 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
+import { InlineChart } from './inline-chart';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -183,7 +184,73 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
-                      ) : null}
+                        ) : toolName === 'analyzeCsvData' ? (
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">
+                                Analyzing CSV data...
+                              </span>
+                            </div>
+                            <pre className="text-xs text-muted-foreground overflow-auto">
+                              {JSON.stringify(args, null, 2)}
+                            </pre>
+                          </div>
+                        ) : toolName === 'filterCsvData' ? (
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">
+                                Filtering data...
+                              </span>
+                            </div>
+                            <pre className="text-xs text-muted-foreground overflow-auto">
+                              {JSON.stringify(args, null, 2)}
+                            </pre>
+                          </div>
+                        ) : toolName === 'createChart' ? (
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">
+                                Creating chart...
+                              </span>
+                            </div>
+                            <pre className="text-xs text-muted-foreground overflow-auto">
+                              {JSON.stringify(args, null, 2)}
+                            </pre>
+                          </div>
+                        ) : toolName === 'readCsvFile' ? (
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">
+                                Reading CSV file...
+                              </span>
+                            </div>
+                            <pre className="text-xs text-muted-foreground overflow-auto">
+                              {JSON.stringify(args, null, 2)}
+                            </pre>
+                          </div>
+                        ) : toolName === 'createChartDocument' ? (
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">
+                                Creating chart document...
+                              </span>
+                            </div>
+                            <pre className="text-xs text-muted-foreground overflow-auto">
+                              {JSON.stringify(args, null, 2)}
+                            </pre>
+                          </div>
+                        ) : toolName === 'createInlineChart' ? (
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">
+                                Creating chart visualization...
+                              </span>
+                            </div>
+                            <pre className="text-xs text-muted-foreground overflow-auto">
+                              {JSON.stringify(args, null, 2)}
+                            </pre>
+                          </div>
+                        ) : null}
                     </div>
                   );
                 }
@@ -212,8 +279,137 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'analyzeCsvData' ? (
+                        <div className="space-y-4">
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">
+                                CSV Analysis Results
+                              </span>
+                            </div>
+                            {result.error ? (
+                              <div className="text-red-500 text-sm">
+                                {result.error}
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <div className="text-sm">
+                                  <strong>Columns:</strong> {result.totalColumns}{' '}
+                                  | <strong>Rows:</strong> {result.rowCount}
+                                </div>
+                                {result.chartSuggestions && result.chartSuggestions.length > 0 && (
+                                  <div className="text-sm text-muted-foreground">
+                                    Generated {result.chartSuggestions.length} chart visualization(s)
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Render inline charts if available */}
+                          {result.chartSuggestions && result.chartSuggestions.map((chart: any, index: number) => (
+                            <InlineChart
+                              key={`chart-${index}`}
+                              chartType={chart.chartType}
+                              title={chart.title}
+                              description=""
+                              data={chart.data}
+                              metadata={chart.metadata}
+                            />
+                          ))}
+                        </div>
+                      ) : toolName === 'createInlineChart' ? (
+                        <div className="space-y-4">
+                          {result.error ? (
+                            <div className="p-4 bg-muted rounded-lg">
+                              <div className="text-red-500 text-sm">
+                                {result.error}
+                              </div>
+                            </div>
+                          ) : result.chart ? (
+                            <InlineChart
+                              chartType={result.chart.chartType}
+                              title={result.chart.title}
+                              description={result.chart.description}
+                              data={result.chart.data}
+                              metadata={result.chart.metadata}
+                            />
+                          ) : null}
+                        </div>
+                      ) : toolName === 'filterCsvData' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Filtered Data Results
+                            </span>
+                          </div>
+                          {result.error ? (
+                            <div className="text-red-500 text-sm">
+                              {result.error}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                Found {result.matchCount} matches, showing{' '}
+                                {result.returnedCount} rows
+                              </div>
+                              <pre className="text-xs overflow-auto max-h-64">
+                                {JSON.stringify(result.filteredData, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      ) : toolName === 'createChart' ? (
+                        <div className="space-y-4">
+                          {result.error ? (
+                            <div className="p-4 bg-muted rounded-lg">
+                              <div className="text-red-500 text-sm">
+                                {result.error}
+                              </div>
+                            </div>
+                          ) : result.chart ? (
+                            <InlineChart
+                              chartType={result.chart.chartType}
+                              title={result.chart.title}
+                              description={result.chart.description}
+                              data={result.chart.data}
+                              metadata={result.chart.metadata}
+                            />
+                          ) : null}
+                        </div>
+                      ) : toolName === 'readCsvFile' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              CSV File Read
+                            </span>
+                          </div>
+                          {result.error ? (
+                            <div className="text-red-500 text-sm">
+                              {result.error}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                File size: {result.size} characters
+                              </div>
+                              <pre className="text-xs overflow-auto max-h-32">
+                                {result.content?.substring(0, 500)}...
+                              </pre>
+                            </div>
+                          )}
+                        </div>
                       ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Tool Result: {toolName}
+                            </span>
+                          </div>
+                          <pre className="text-xs text-muted-foreground overflow-auto max-h-64">
+                            {JSON.stringify(result, null, 2)}
+                          </pre>
+                        </div>
                       )}
                     </div>
                   );

@@ -7,12 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { DocumentSkeleton } from '@/components/document-skeleton';
 import { CopyIcon } from '@/components/icons';
 import {
-  BarChartIcon,
-  LineChartIcon,
-  PieChartIcon,
-  RadarChartIcon,
-  HeatMapChartIcon,
-  ScatterChartIcon,
   ChartIcon,
 } from '@/components/chart-icons';
 import { toast } from 'sonner';
@@ -73,16 +67,6 @@ export function ChartEditor({
     },
   };
 
-  // generate random CSV data when needed
-  const generateRandomCSV = () => {
-    const headers = ['label', 'value'];
-    const rows = Array.from(
-      { length: 5 },
-      (_, i) =>
-        `${String.fromCharCode(65 + i)},${Math.floor(Math.random() * 100)}`,
-    );
-    return [headers.join(','), ...rows].join('\n');
-  };
   const parseContent = (contentValue: string) => {
     try {
       if (!contentValue || contentValue.trim() === '') {
@@ -182,6 +166,7 @@ export function ChartEditor({
       }
 
       const transformedData = transformFn(data, meta);
+      console.log('transformedData', transformedData);
       return Array.isArray(transformedData) ? transformedData : [];
     } catch (error) {
       console.error('Error parsing CSV data:', error);

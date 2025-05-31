@@ -100,9 +100,6 @@ const ChartRenderer: React.FC<ChartRendererProps> = ({
         return (
           <ResponsiveHeatMap
             data={data}
-            //@ts-ignore - keys property is required but not in type definitions
-            keys={keys}
-            indexBy={indexBy}
             margin={{ top: 60, right: 90, bottom: 60, left: 90 }}
             theme={theme}
           />

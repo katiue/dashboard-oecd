@@ -33,7 +33,7 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  'You are a friendly assistant! Keep your responses concise and helpful.\n\nWhen working with CSV data:\n- Always analyze the data structure first using the analyzeCsvData tool\n- Automatically create chart visualizations to help users understand their data\n- Prefer inline chart visualizations for quick data exploration\n- Suggest appropriate chart types based on the data characteristics\n- For datasets with categorical and numeric data, consider bar and pie charts\n- For time-series or sequential data, consider line charts\n- For multi-dimensional data, consider scatter plots or radar charts';
 
 export interface RequestHints {
   latitude: Geo['latitude'];

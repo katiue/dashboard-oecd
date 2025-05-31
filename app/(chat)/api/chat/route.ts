@@ -23,6 +23,12 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { analyzeCsvData } from '@/lib/ai/tools/analyze-csv-data';
+import { filterCsvData } from '@/lib/ai/tools/filter-csv-data';
+import { createChart } from '@/lib/ai/tools/create-chart';
+import { readCsvFile } from '@/lib/ai/tools/read-csv-file';
+import { createChartDocument } from '@/lib/ai/tools/create-chart-document';
+import { createInlineChart } from '@/lib/ai/tools/create-inline-chart';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider, createProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
@@ -206,6 +212,12 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  'analyzeCsvData',
+                  // 'filterCsvData',
+                  // 'createChart',
+                  // 'readCsvFile',
+                  'createChartDocument',
+                  'createInlineChart',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -217,6 +229,12 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            analyzeCsvData,
+            filterCsvData,
+            createChart,
+            readCsvFile,
+            createChartDocument: createChartDocument({ session, dataStream }),
+            createInlineChart,
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {
