@@ -73,7 +73,29 @@ export function ChartEditor({
         return; // Skip processing empty content
       }
       
+      // Check if content looks like JSON (starts with { and ends with })
+      const trimmedContent = contentValue.trim();
+      if (!trimmedContent.startsWith('{') || !trimmedContent.endsWith('}')) {
+        console.log('Content does not appear to be JSON, treating as plain text/CSV data');
+        // If it looks like CSV data (contains commas and lines), use it as CSV
+        if (trimmedContent.includes(',') && trimmedContent.includes('\n')) {
+          setCsvData(trimmedContent);
+          setChartConfigurations([]);
+        } else {
+          // Otherwise, it might be natural language from the AI - ignore it
+          console.log('Content appears to be natural language, ignoring...');
+        }
+        return;
+      }
+      
       const parsedContent = JSON.parse(contentValue);
+      
+      // Validate the parsed content has the expected structure
+      if (typeof parsedContent !== 'object' || parsedContent === null) {
+        console.log('Parsed content is not a valid object');
+        return;
+      }
+      
       // Only use csvData and ignore randomData to prevent data replacement
       const dataFromContent = parsedContent.csvData || '';
 
@@ -96,10 +118,18 @@ export function ChartEditor({
       }
     } catch (e) {
       console.error('Error parsing chart content:', e);
-      // If JSON parsing fails, assume it's CSV data only
+      // If JSON parsing fails, check if it might be CSV data
       if (typeof contentValue === 'string') {
-        setCsvData(contentValue);
-        setChartConfigurations([]);
+        const trimmedContent = contentValue.trim();
+        // Only treat as CSV if it actually looks like CSV data
+        if (trimmedContent.includes(',') && (trimmedContent.includes('\n') || trimmedContent.split(',').length > 1)) {
+          console.log('Treating failed JSON parse as CSV data');
+          setCsvData(trimmedContent);
+          setChartConfigurations([]);
+        } else {
+          console.log('Content does not appear to be valid CSV or JSON, ignoring...');
+          // Don't clear existing data if the content doesn't look useful
+        }
       }
     }
   };
@@ -341,9 +371,11 @@ export function ChartEditor({
                 <h3 className="text-lg font-medium mb-2">
                   No Charts Available
                 </h3>
-                <p className="text-sm text-gray-500">
-                  No chart configurations found. Add CSV data first, then the AI
-                  agent can generate charts for you.
+                <p className="text-sm text-gray-500 mb-4">
+                  {csvData 
+                    ? "No chart configurations found. Add CSV data first, then the AI agent can generate charts for you."
+                    : "This chart document needs data to create visualizations. Switch to the Data tab to add CSV data, or ask the AI to create charts with sample data."
+                  }
                 </p>
                 {csvData && isCurrentVersion && (
                   <Button
@@ -379,6 +411,11 @@ export function ChartEditor({
                       selectedChartType.slice(1)}{' '}
                     Chart
                   </Button>
+                )}
+                {!csvData && !isCurrentVersion && (
+                  <div className="text-xs text-gray-400 mt-2">
+                    💡 Tip: Ask the AI "Create a chart with sample sales data" or "Generate a chart document with sample data" to get started
+                  </div>
                 )}
               </div>
             )}
