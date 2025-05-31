@@ -60,7 +60,7 @@ export function InlineChart({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 shrink-0"
+              className="size-8 p-0 shrink-0"
               title="View chart data"
               onClick={() => setIsDataExpanded(!isDataExpanded)}
             >
@@ -101,7 +101,7 @@ export function InlineChart({
               theme={defaultChartTheme}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center">
+            <div className="flex size-full items-center justify-center">
               <p className="text-muted-foreground">No data available for this chart</p>
             </div>
           )}

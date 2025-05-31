@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { parse } from 'papaparse';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,7 +67,7 @@ export function ChartEditor({
     },
   };
 
-  const parseContent = (contentValue: string) => {
+  const parseContent = useCallback((contentValue: string) => {
     try {
       if (!contentValue || contentValue.trim() === '') {
         return; // Skip processing empty content
@@ -132,7 +132,7 @@ export function ChartEditor({
         }
       }
     }
-  };
+  }, []);
 
   // Only process content if it's present and not already processed
   const prevContent = useRef('');
@@ -143,7 +143,7 @@ export function ChartEditor({
       prevContent.current = content;
       parseContent(content);
     }
-  }, [content]);
+  }, [content, parseContent]);
 
   const handleDataChange = (newData: string) => {
     setCsvData(newData);
@@ -414,7 +414,7 @@ export function ChartEditor({
                 )}
                 {!csvData && !isCurrentVersion && (
                   <div className="text-xs text-gray-400 mt-2">
-                    💡 Tip: Ask the AI "Create a chart with sample sales data" or "Generate a chart document with sample data" to get started
+                    💡 Tip: Ask the AI &quot;Create a chart with sample sales data&quot; or &quot;Generate a chart document with sample data&quot; to get started
                   </div>
                 )}
               </div>

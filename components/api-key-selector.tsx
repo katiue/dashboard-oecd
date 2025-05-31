@@ -171,13 +171,13 @@ export function ApiKeySelector({ className }: ApiKeySelectorProps) {
               variant="ghost"
               size="icon"
               onClick={handleSave}
-              className="h-8 w-8"
+              className="size-8"
               disabled={!isValid || isTesting}
             >
               {isTesting ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                <div className="size-4 animate-spin rounded-full border-2 border-t-transparent" />
               ) : (
-                <CheckIcon className="h-4 w-4" />
+                <CheckIcon className="size-4" />
               )}
             </Button>
           </TooltipTrigger>
@@ -189,10 +189,10 @@ export function ApiKeySelector({ className }: ApiKeySelectorProps) {
           variant="ghost"
           size="icon"
           onClick={handleCancel}
-          className="h-8 w-8"
+          className="size-8"
           disabled={isTesting}
         >
-          <XIcon className="h-4 w-4" />
+          <XIcon className="size-4" />
         </Button>
       </div>
     );
@@ -211,7 +211,7 @@ export function ApiKeySelector({ className }: ApiKeySelectorProps) {
                 setIsEditing(true);
               }}
             >
-              <KeyIcon className="h-3.5 w-3.5" />
+              <KeyIcon className="size-3.5" />
               {hasCustomApiKey ? 'Custom API Key' : 'Add API Key'}
             </Button>
           </TooltipTrigger>
@@ -230,9 +230,9 @@ export function ApiKeySelector({ className }: ApiKeySelectorProps) {
                   variant="ghost"
                   size="icon"
                   onClick={handleClear}
-                  className="h-8 w-8"
+                  className="size-8"
                 >
-                  <XIcon className="h-3.5 w-3.5" />
+                  <XIcon className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Remove custom API key</TooltipContent>
