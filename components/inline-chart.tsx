@@ -25,16 +25,6 @@ export function InlineChart({
 }: InlineChartProps) {
   const [isDataExpanded, setIsDataExpanded] = useState(false);
 
-  // default Nivo theme for tooltips (dark background, white text)
-  const defaultChartTheme = {
-    tooltip: {
-      container: {
-        background: 'rgba(0,0,0,0.75)',
-        color: '#fff',
-        fontSize: '12px',
-      },
-    },
-  };
 
   return (
     <Card className="w-full max-w-2xl">
@@ -98,7 +88,6 @@ export function InlineChart({
             <ChartRenderer
               chartType={chartType}
               data={data}
-              theme={defaultChartTheme}
             />
           ) : (
             <div className="flex size-full items-center justify-center">

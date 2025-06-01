@@ -52,20 +52,9 @@ export function ChartEditor({
     ChartVisualization[]
   >([]);
   const [csvData, setCsvData] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
   const [selectedChartType, setSelectedChartType] = useState<
     'bar' | 'line' | 'pie' | 'heatmap' | 'radar' | 'scatter'
   >('bar');
-  // default Nivo theme for tooltips (dark background, white text)
-  const defaultChartTheme = {
-    tooltip: {
-      container: {
-        background: 'rgba(0,0,0,0.75)',
-        color: '#fff',
-        fontSize: '12px',
-      },
-    },
-  };
 
   const parseContent = useCallback((contentValue: string) => {
     try {
@@ -353,7 +342,6 @@ export function ChartEditor({
                       <ChartRenderer
                         chartType={visualization.chartType as ChartType}
                         data={visualization.data}
-                        theme={defaultChartTheme}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">

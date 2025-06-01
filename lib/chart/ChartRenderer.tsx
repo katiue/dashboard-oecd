@@ -23,10 +23,53 @@ interface ChartRendererProps {
   theme?: any;
 }
 
+const customTheme: any = {
+  axis: {
+    domain: {
+      line: {
+        stroke: '#ffffff',
+        strokeWidth: 1,
+      },
+    },
+    ticks: {
+      line: {
+        stroke: '#ffffff',
+        strokeWidth: 12,
+      },
+      text: {
+        fill: '#ffffff',
+        fontSize: 12,
+      },
+    },
+    legend: {
+      text: {
+        fill: '#ffffff',
+        fontSize: 14,
+      },
+    },
+  },
+  grid: {
+    line: {
+      stroke: '#ffffff',
+      strokeWidth: 1,
+      strokeOpacity: 0.2,
+    },
+  },
+  text: {
+    fill: '#ffffff',
+  },
+  tooltip: {
+    container: {
+      background: '#333333',
+      color: '#ffffff',
+    },
+  },
+};
+
 const ChartRenderer: React.FC<ChartRendererProps> = ({
   chartType,
   data,
-  theme,
+  theme = customTheme,
 }) => {
   // Enhanced data validation
   if (!data || !Array.isArray(data) || data.length === 0 || !data[0]) {
