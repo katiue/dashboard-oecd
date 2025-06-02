@@ -15,12 +15,13 @@ interface CreateDocumentProps {
 export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
   tool({
     description:
-      'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
+      'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind. For chart documents, you can optionally specify the chart type.',
     parameters: z.object({
       title: z.string(),
       kind: z.enum(artifactKinds),
+      chartType: z.enum(['bar', 'line', 'pie', 'heatmap', 'radar', 'scatter', 'areaBump']).optional().describe('The type of chart to create (only applicable when kind is "chart")'),
     }),
-    execute: async ({ title, kind }) => {
+    execute: async ({ title, kind, chartType }) => {
       const id = generateUUID();
 
       dataStream.writeData({
@@ -38,6 +39,11 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         content: title,
       });
 
+      // If chart type is specified, include it in the title for better context
+      const enhancedTitle = chartType && kind === 'chart' 
+        ? `${title} (${chartType} chart)` 
+        : title;
+
       dataStream.writeData({
         type: 'clear',
         content: '',
@@ -54,7 +60,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
 
       await documentHandler.onCreateDocument({
         id,
-        title,
+        title: enhancedTitle,
         dataStream,
         session,
       });
@@ -63,8 +69,9 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
 
       return {
         id,
-        title,
+        title: enhancedTitle,
         kind,
+        chartType: chartType || undefined,
         content: 'A document was created and is now visible to the user.',
       };
     },

@@ -184,73 +184,73 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
-                        ) : toolName === 'analyzeCsvData' ? (
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium">
-                                Analyzing CSV data...
-                              </span>
-                            </div>
-                            <pre className="text-xs text-muted-foreground overflow-auto">
-                              {JSON.stringify(args, null, 2)}
-                            </pre>
+                      ) : toolName === 'analyzeCsvData' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Analyzing CSV data...
+                            </span>
                           </div>
-                        ) : toolName === 'filterCsvData' ? (
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium">
-                                Filtering data...
-                              </span>
-                            </div>
-                            <pre className="text-xs text-muted-foreground overflow-auto">
-                              {JSON.stringify(args, null, 2)}
-                            </pre>
+                          <pre className="text-xs text-muted-foreground overflow-auto">
+                            {JSON.stringify(args, null, 2)}
+                          </pre>
+                        </div>
+                      ) : toolName === 'filterCsvData' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Filtering data...
+                            </span>
                           </div>
-                        ) : toolName === 'createChart' ? (
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium">
-                                Creating chart...
-                              </span>
-                            </div>
-                            <pre className="text-xs text-muted-foreground overflow-auto">
-                              {JSON.stringify(args, null, 2)}
-                            </pre>
+                          <pre className="text-xs text-muted-foreground overflow-auto">
+                            {JSON.stringify(args, null, 2)}
+                          </pre>
+                        </div>
+                      ) : toolName === 'createChart' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Creating chart...
+                            </span>
                           </div>
-                        ) : toolName === 'readCsvFile' ? (
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium">
-                                Reading CSV file...
-                              </span>
-                            </div>
-                            <pre className="text-xs text-muted-foreground overflow-auto">
-                              {JSON.stringify(args, null, 2)}
-                            </pre>
+                          <pre className="text-xs text-muted-foreground overflow-auto">
+                            {JSON.stringify(args, null, 2)}
+                          </pre>
+                        </div>
+                      ) : toolName === 'readCsvFile' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Reading CSV file...
+                            </span>
                           </div>
-                        ) : toolName === 'createChartDocument' ? (
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium">
-                                Creating chart document...
-                              </span>
-                            </div>
-                            <pre className="text-xs text-muted-foreground overflow-auto">
-                              {JSON.stringify(args, null, 2)}
-                            </pre>
+                          <pre className="text-xs text-muted-foreground overflow-auto">
+                            {JSON.stringify(args, null, 2)}
+                          </pre>
+                        </div>
+                      ) : toolName === 'createChartDocument' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Creating chart document...
+                            </span>
                           </div>
-                        ) : toolName === 'createInlineChart' ? (
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium">
-                                Creating chart visualization...
-                              </span>
-                            </div>
-                            <pre className="text-xs text-muted-foreground overflow-auto">
-                              {JSON.stringify(args, null, 2)}
-                            </pre>
+                          <pre className="text-xs text-muted-foreground overflow-auto">
+                            {JSON.stringify(args, null, 2)}
+                          </pre>
+                        </div>
+                      ) : toolName === 'createInlineChart' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Creating chart visualization...
+                            </span>
                           </div>
-                        ) : null}
+                          <pre className="text-xs text-muted-foreground overflow-auto">
+                            {JSON.stringify(args, null, 2)}
+                          </pre>
+                        </div>
+                      ) : null}
                     </div>
                   );
                 }
@@ -294,29 +294,33 @@ const PurePreviewMessage = ({
                             ) : (
                               <div className="space-y-2">
                                 <div className="text-sm">
-                                  <strong>Columns:</strong> {result.totalColumns}{' '}
-                                  | <strong>Rows:</strong> {result.rowCount}
+                                  <strong>Columns:</strong>{' '}
+                                  {result.totalColumns} | <strong>Rows:</strong>{' '}
+                                  {result.rowCount}
                                 </div>
-                                {result.chartSuggestions && result.chartSuggestions.length > 0 && (
-                                  <div className="text-sm text-muted-foreground">
-                                    Generated {result.chartSuggestions.length} chart visualization(s)
-                                  </div>
-                                )}
+                                {result.chartSuggestions &&
+                                  result.chartSuggestions.length > 0 && (
+                                    <div className="text-sm text-muted-foreground">
+                                      Generated {result.chartSuggestions.length}{' '}
+                                      chart visualization(s)
+                                    </div>
+                                  )}
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Render inline charts if available */}
-                          {result.chartSuggestions && result.chartSuggestions.map((chart: any, index: number) => (
-                            <InlineChart
-                              key={`chart-${index}`}
-                              chartType={chart.chartType}
-                              title={chart.title}
-                              description=""
-                              data={chart.data}
-                              metadata={chart.metadata}
-                            />
-                          ))}
+                          {result.chartSuggestions &&
+                            result.chartSuggestions.map((chart: any) => (
+                              <InlineChart
+                                key={`chart-${chart.title}-${chart.chartType}`}
+                                chartType={chart.chartType}
+                                title={chart.title}
+                                description=""
+                                data={chart.data}
+                                metadata={chart.metadata}
+                              />
+                            ))}
                         </div>
                       ) : toolName === 'createInlineChart' ? (
                         <div className="space-y-4">
