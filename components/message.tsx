@@ -195,6 +195,17 @@ const PurePreviewMessage = ({
                             {JSON.stringify(args, null, 2)}
                           </pre>
                         </div>
+                      ) : toolName === 'configureChart' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Configuring chart...
+                            </span>
+                          </div>
+                          <pre className="text-xs text-muted-foreground overflow-auto">
+                            {JSON.stringify(args, null, 2)}
+                          </pre>
+                        </div>
                       ) : toolName === 'filterCsvData' ? (
                         <div className="p-4 bg-muted rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
@@ -310,17 +321,38 @@ const PurePreviewMessage = ({
                           </div>
 
                           {/* Render inline charts if available */}
-                          {result.chartSuggestions &&
-                            result.chartSuggestions.map((chart: any) => (
-                              <InlineChart
-                                key={`chart-${chart.title}-${chart.chartType}`}
-                                chartType={chart.chartType}
-                                title={chart.title}
-                                description=""
-                                data={chart.data}
-                                metadata={chart.metadata}
-                              />
-                            ))}
+                          {result.chartSuggestions?.map((chart: any) => (
+                            <InlineChart
+                              key={`chart-${chart.title}-${chart.chartType}`}
+                              chartType={chart.chartType}
+                              title={chart.title}
+                              description=""
+                              data={chart.data}
+                              metadata={chart.metadata}
+                            />
+                          ))}
+                        </div>
+                      ) : toolName === 'configureChart' ? (
+                        <div className="space-y-4">
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">
+                                Chart Configuration Results
+                              </span>
+                            </div>
+                            {result.error ? (
+                              <div className="text-red-500 text-sm">
+                                Error: {result.error}
+                              </div>
+                            ) : (
+                              <div className="text-sm">
+                                <div className="font-medium mb-2">Chart: {result.title}</div>
+                                <div className="text-muted-foreground">
+                                  Type: {result.chartType} | Columns: {result.dataMapping ? Object.values(result.dataMapping).flat().join(', ') : 'N/A'}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ) : toolName === 'createInlineChart' ? (
                         <div className="space-y-4">

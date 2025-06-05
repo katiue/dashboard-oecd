@@ -9,6 +9,7 @@ interface InlineChartProps {
   title: string;
   description?: string;
   data: any[];
+  chartId?: string;
   metadata?: {
     originalDataCount?: number;
     transformedDataCount?: number;
@@ -21,6 +22,7 @@ export function InlineChart({
   title,
   description,
   data,
+  chartId,
   metadata,
 }: InlineChartProps) {
   const [isDataExpanded, setIsDataExpanded] = useState(false);
@@ -30,8 +32,12 @@ export function InlineChart({
     <Card className="w-full max-w-2xl">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg">{title}</CardTitle>
+          <div className="flex-1">            <CardTitle className="text-lg">{title}</CardTitle>
+            {chartId && (
+              <div className="text-xs text-muted-foreground font-mono">
+                ID: {chartId}
+              </div>
+            )}
             {description && (
               <p className="text-sm text-muted-foreground">{description}</p>
             )}
@@ -81,9 +87,12 @@ export function InlineChart({
           </div>
         </div>
       </CardHeader>
-      
-      <CardContent>
-        <div style={{ height: 300 }}>
+        <CardContent>
+        <div 
+          style={{ height: 300 }}
+          data-chart-id={chartId}
+          data-testid={chartId ? `chart-${chartId}` : undefined}
+        >
           {data && Array.isArray(data) && data.length > 0 ? (
             <ChartRenderer
               chartType={chartType}

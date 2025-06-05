@@ -96,6 +96,25 @@ export class ChatPage {
     await this.page.getByTestId('attachments-button').click();
   }
 
+  async addCsvAttachment() {
+    this.page.on('filechooser', async (fileChooser) => {
+      const filePath = path.join(
+        process.cwd(),
+        'public',
+        'test-data.csv',
+      );
+      const csvBuffer = fs.readFileSync(filePath);
+
+      await fileChooser.setFiles({
+        name: 'test-data.csv',
+        mimeType: 'text/csv',
+        buffer: csvBuffer,
+      });
+    });
+
+    await this.page.getByTestId('attachments-button').click();
+  }
+
   public async getSelectedModel() {
     const modelId = await this.page.getByTestId('model-selector').innerText();
     return modelId;

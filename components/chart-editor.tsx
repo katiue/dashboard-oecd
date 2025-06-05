@@ -11,22 +11,13 @@ import {
 } from '@/components/chart-icons';
 import { toast } from 'sonner';
 import ChartRenderer, { type ChartType } from '@/lib/chart/ChartRenderer';
-import * as ChartTransforms from '@/lib/chart/ChartTransforms';
-
+import * as ChartDataProcessor from '@/lib/chart/ChartDataProcessor';
 interface ChartEditorProps {
   content: string;
   currentVersionIndex: number;
   isCurrentVersion: boolean;
   saveContent: (content: string, debounce: boolean) => void;
   status: 'streaming' | 'idle';
-}
-
-interface ChartConfig {
-  chartType: 'bar' | 'line' | 'pie' | 'heatmap' | 'radar' | 'scatter';
-  title: string;
-  description: string;
-  dataSchema: string;
-  randomData: string;
 }
 
 interface ChartVisualization {
@@ -176,8 +167,8 @@ export function ChartEditor({
       }
 
       // dynamic transform lookup
-      const transformFnName = `transformFor${chartType.charAt(0).toUpperCase() + chartType.slice(1)}Chart`;
-      const transformFn = (ChartTransforms as any)[transformFnName];
+      const transformFnName = `process${chartType.charAt(0).toUpperCase() + chartType.slice(1)}ChartData`;
+      const transformFn = (ChartDataProcessor as any)[transformFnName];
 
       if (typeof transformFn !== 'function') {
         console.warn(`Transform function ${transformFnName} not found`);

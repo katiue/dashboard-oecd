@@ -157,11 +157,21 @@ function PureMultimodalInput({
     } catch (error) {
       toast.error('Failed to upload file, please try again!');
     }
-  };
-
-  const handleFileChange = useCallback(
+  };  const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
+
+      console.log('=== FILE UPLOAD INITIATED ===');
+      console.log('Number of files:', files.length);
+      files.forEach((file, index) => {
+        console.log(`File ${index + 1}:`, {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: new Date(file.lastModified).toISOString()
+        });
+      });
+      console.log('==============================');
 
       setUploadQueue(files.map((file) => file.name));
 
@@ -170,11 +180,40 @@ function PureMultimodalInput({
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
           (attachment) => attachment !== undefined,
-        );
+        );        // Process attachments based on file type
+        const processedAttachments = successfullyUploadedAttachments.map((attachment) => {
+          const isCsvFile = attachment.contentType === 'text/csv' || 
+                           attachment.contentType === 'application/vnd.ms-excel';
+          
+          console.log('=== ATTACHMENT PROCESSING ===');
+          console.log('File name:', attachment.name);
+          console.log('File URL:', attachment.url);
+          console.log('Content type:', attachment.contentType);
+          console.log('Is CSV file:', isCsvFile);
+          
+          if (isCsvFile) {
+            // For CSV files, we only need the URL - the AI will fetch content itself
+            console.log('CSV Processing: URL-only approach - AI agent will receive URL instead of raw content');
+            console.log('CSV Tools (readCsvFile, createInlineChart, etc.) will fetch content from URL when needed');
+            console.log('============================');
+            
+            return {
+              url: attachment.url,
+              name: attachment.name,
+              contentType: attachment.contentType,
+            };
+          } else {
+            // For images and other files, keep the existing behavior
+            console.log('Non-CSV Processing: Full attachment data sent to AI agent');
+            console.log('============================');
+            
+            return attachment;
+          }
+        });
 
         setAttachments((currentAttachments) => [
           ...currentAttachments,
-          ...successfullyUploadedAttachments,
+          ...processedAttachments,
         ]);
       } catch (error) {
         console.error('Error uploading files!', error);

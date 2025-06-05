@@ -46,12 +46,10 @@ function getRandomSample<T>(array: T[], count: number): T[] {
 
 export const readCsvFile = tool({
   description:
-    'Read a CSV file from a URL (e.g., uploaded file), parse it, and return 10 random data rows along with column information. Only use this tool when a user has explicitly provided a CSV file URL or uploaded a CSV file.',
+    'Read a CSV file from a URL (e.g., uploaded file), parse it, and return 10 random data rows (or fewer if the file has less than 10 rows) along with column information for analysis and preview. IMPORTANT: This tool only returns a SAMPLE of the data for analysis. If you need to create charts or visualizations, you must use chart creation tools (like createInlineChart) which will fetch and process the FULL CSV data automatically. CRITICAL: When a user uploads a CSV file, use the attachment URL from the conversation context - DO NOT use placeholder URLs like "https://file.csv".',
   parameters: z.object({
-    fileUrl: z.string().describe('The URL of the CSV file to read'),
-  }),
-  execute: async ({ fileUrl }) => {
-    console.log('readCsvFile tool called with URL:', fileUrl);
+    fileUrl: z.string().describe('The URL of the CSV file to read - MUST be the actual file URL from attachments, not a placeholder'),
+  }),  execute: async ({ fileUrl }) => {
     try {
       // Create an AbortController for timeout
       const controller = new AbortController();
@@ -64,10 +62,8 @@ export const readCsvFile = tool({
         },
       });
       clearTimeout(timeoutId);
-      console.log('CSV fetch completed, status:', response.status);
 
       if (!response.ok) {
-        console.log('CSV fetch failed with status:', response.status);
         return {
           error: `Failed to fetch file: ${response.status} ${response.statusText}`,
           content: '',
@@ -78,26 +74,34 @@ export const readCsvFile = tool({
       }
 
       const contentType = response.headers.get('content-type');
+      console.log('Content-Type:', contentType);
+      
       if (
         contentType &&
         !contentType.includes('text/csv') &&
         !contentType.includes('text/plain') &&
         !contentType.includes('application/vnd.ms-excel')
       ) {
+        const errorMsg = 'File does not appear to be a CSV file';
+        console.log('Error:', errorMsg);
         return {
-          error: 'File does not appear to be a CSV file',
+          error: errorMsg,
           content: '',
           columns: [],
           sampleData: [],
           totalRows: 0,
         };
       }
+      
       const content = await response.text();
+      console.log('Content length:', content.length, 'characters');
 
       // Check file size limit (1MB)
       if (content.length > 1024 * 1024) {
+        const errorMsg = 'File is too large. Maximum size is 1MB.';
+        console.log('Error:', errorMsg);
         return {
-          error: 'File is too large. Maximum size is 1MB.',
+          error: errorMsg,
           content: '',
           columns: [],
           sampleData: [],
@@ -105,9 +109,11 @@ export const readCsvFile = tool({
         };
       }
 
-      if (!content || content.trim() === '') {
+            if (!content || content.trim() === '') {
+        const errorMsg = 'File is empty or could not be read';
+        console.log('Error:', errorMsg);
         return {
-          error: 'File is empty or could not be read',
+          error: errorMsg,
           content: '',
           columns: [],
           sampleData: [],
@@ -115,12 +121,17 @@ export const readCsvFile = tool({
         };
       }
 
+      console.log('Parsing CSV content...');
       // Parse the CSV data
       const { headers, data } = parseCSV(content);
+      console.log('Parsed headers:', headers);
+      console.log('Total data rows:', data.length);
 
       if (data.length === 0) {
+        const errorMsg = 'No valid data rows found in CSV';
+        console.log('Error:', errorMsg);
         return {
-          error: 'No valid data rows found in CSV',
+          error: errorMsg,
           content,
           columns: headers,
           sampleData: [],
@@ -150,10 +161,15 @@ export const readCsvFile = tool({
           type: dataType,
           sampleValue: sampleValues[0] || null,
         };
-      }); // Get 10 random data rows
-      const sampleData = getRandomSample(data, 10);
+      });
 
-      console.log('CSV parsing completed successfully, returning data');
+      // Get 10 random data rows
+      const sampleData = getRandomSample(data, 10);
+      
+      console.log('Column analysis:', columns.map(col => `${col.name} (${col.type})`));
+      console.log('Sample data rows:', sampleData.length);
+      console.log('=== END CSV TOOL EXECUTION ===');
+      
       return {
         content,
         columns,
@@ -161,10 +177,13 @@ export const readCsvFile = tool({
         totalRows: data.length,
         totalColumns: columns.length,
         size: content.length,
-        message: `Successfully read CSV file with ${data.length} rows and ${columns.length} columns. Showing 10 random sample rows.`,
-      };
-    } catch (error) {
-      console.log('Error in readCsvFile tool:', error);
+        message: `Successfully read CSV file with ${data.length} rows and ${columns.length} columns. Showing ${sampleData.length} random sample rows for analysis. To create charts or visualizations, use chart creation tools which will process the full dataset.`,
+      };    } catch (error) {
+      console.log('=== CSV TOOL ERROR ===');
+      console.log('Error details:', error);
+      console.log('File URL:', fileUrl);
+      console.log('======================');
+      
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           return {

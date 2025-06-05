@@ -1,6 +1,7 @@
 import type { Attachment } from 'ai';
 
 import { LoaderIcon } from './icons';
+import { FileSpreadsheet } from 'lucide-react';
 
 export const PreviewAttachment = ({
   attachment,
@@ -24,6 +25,10 @@ export const PreviewAttachment = ({
               alt={name ?? 'An image attachment'}
               className="rounded-md size-full object-cover"
             />
+          ) : contentType === 'text/csv' || contentType === 'application/vnd.ms-excel' ? (
+            <div className="flex items-center justify-center h-full">
+              <FileSpreadsheet className="h-8 w-8 text-green-600" />
+            </div>
           ) : (
             <div className="" />
           )

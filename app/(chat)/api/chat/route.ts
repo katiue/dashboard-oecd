@@ -26,6 +26,8 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { filterCsvData } from '@/lib/ai/tools/filter-csv-data';
 import { readCsvFile } from '@/lib/ai/tools/read-csv-file';
 import { createInlineChart } from '@/lib/ai/tools/create-inline-chart';
+import { configureChart } from '@/lib/ai/tools/configure-chart';
+import { captureChartScreenshot } from '@/lib/ai/tools/capture-chart-screenshot';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider, createProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
@@ -39,6 +41,12 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { 
+  extractCsvFiles, 
+  transformMessagesForAgent, 
+  generateCsvSystemPrompt 
+} from '@/lib/ai/csv-transform';
+
 
 export const maxDuration = 60;
 
@@ -73,7 +81,6 @@ export async function POST(request: Request) {
   } catch (_) {
     return new ChatSDKError('bad_request:api').toResponse();
   }
-
   try {
     const { id, message, selectedChatModel, selectedVisibilityType } =
       requestBody;
@@ -133,17 +140,13 @@ export async function POST(request: Request) {
       if (chat.userId !== session.user.id) {
         return new ChatSDKError('forbidden:chat').toResponse();
       }
-    }
-
-    const previousMessages = await getMessagesByChatId({ id });
+    }    const previousMessages = await getMessagesByChatId({ id });
 
     const messages = appendClientMessage({
       // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
       messages: previousMessages,
       message,
-    });
-
-    const { longitude, latitude, city, country } = geolocation(request);
+    });    const { longitude, latitude, city, country } = geolocation(request);
 
     const requestHints: RequestHints = {
       longitude,
@@ -189,17 +192,23 @@ export async function POST(request: Request) {
     // If there's an Auth header in the format "Bearer API_KEY", extract the key
     if (authHeader?.startsWith('Bearer ')) {
       customApiKey = authHeader.substring(7);
-    }
-
-    // Create provider with custom API key if available
+    }    // Create provider with custom API key if available
     const provider = customApiKey ? createProvider(customApiKey) : myProvider;
 
     const stream = createDataStream({
       execute: (dataStream) => {
-        const result = streamText({
+        // Extract CSV files from the entire conversation
+        const conversationCsvFiles = extractCsvFiles(messages, previousMessages, message);
+
+        // Transform messages to remove CSV attachments and add file references
+        const transformedMessages = transformMessagesForAgent(messages, conversationCsvFiles);
+
+        // Generate system prompt with CSV-specific instructions if needed
+        const systemPromptContent = systemPrompt({ selectedChatModel, requestHints }) + 
+          generateCsvSystemPrompt(conversationCsvFiles);        const result = streamText({
           model: provider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
-          messages,
+          system: systemPromptContent,
+          messages: transformedMessages,
           maxSteps: 5,
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
@@ -212,6 +221,8 @@ export async function POST(request: Request) {
                   'filterCsvData',
                   'readCsvFile',
                   'createInlineChart',
+                  'captureChartScreenshot',
+                  'configureChart',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -226,6 +237,8 @@ export async function POST(request: Request) {
             filterCsvData,
             readCsvFile,
             createInlineChart,
+            captureChartScreenshot,
+            configureChart,
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {
@@ -260,8 +273,6 @@ export async function POST(request: Request) {
                 });
               } catch (error) {
                 console.error('Failed to save chat response:', error);
-                // Cannot return a response here since we're in a callback
-                // Just log the error for debugging purposes
               }
             }
           },

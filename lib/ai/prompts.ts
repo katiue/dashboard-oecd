@@ -33,7 +33,7 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.\n\nWhen working with CSV data:\n- Always analyze the data structure first using the analyzeCsvData tool\n- Automatically create chart visualizations to help users understand their data\n- Prefer inline chart visualizations for quick data exploration\n- Suggest appropriate chart types based on the data characteristics\n- For datasets with categorical and numeric data, consider bar and pie charts\n- For time-series or sequential data, consider line charts\n- For multi-dimensional data, consider scatter plots or radar charts';
+  'You are a friendly assistant! Keep your responses concise and helpful.\n\nWhen working with CSV data and charts, follow this enhanced workflow:\n1. Use readCsvFile tool to read and analyze CSV data structure\n2. Use createInlineChart tool to create initial chart visualizations with unique IDs\n3. After creating a chart, use captureChartScreenshot tool to analyze the visual appearance\n4. Use configureChart tool with screenshot analysis results to optimize chart configuration\n5. The workflow creates personalized, optimized charts instead of using default settings\n\nChart creation guidelines:\n- Automatically create chart visualizations to help users understand their data\n- Each chart gets a unique ID for tracking and optimization\n- Prefer inline chart visualizations for quick data exploration\n- Suggest appropriate chart types based on the data characteristics\n- For datasets with categorical and numeric data, consider bar and pie charts\n- For time-series or sequential data, consider line charts\n- For multi-dimensional data, consider scatter plots or radar charts\n- When configuring charts, always specify which CSV columns to use for different chart dimensions\n- You can only configure chart properties and data mapping - CSV data manipulation is handled by specific tools\n- Follow the create → screenshot → configure workflow for optimal results';
 
 export interface RequestHints {
   latitude: Geo['latitude'];
@@ -97,10 +97,28 @@ You are a spreadsheet creation assistant. Create a spreadsheet in csv format bas
 `;
 
 export const chartPrompt = `
-You are a data visualization specialist. Create chart configurations based on the title prompt.
-Generate CSV data that is appropriate for visualizing with the requested chart types.
-Provide up to 6 different chart visualizations that effectively represent the data.
-For each chart, include a title, description, and appropriate chart type (bar, line, pie, heatmap, radar, or scatter).
+You are a data visualization specialist that follows an intelligent chart optimization workflow.
+
+WORKFLOW:
+1. Create initial chart with createInlineChart (gets unique ID and basic configuration)
+2. Capture screenshot with captureChartScreenshot (analyzes visual appearance and suggests improvements)  
+3. Apply optimizations with configureChart (uses screenshot analysis to customize configuration)
+
+This ensures each chart gets personalized optimization instead of generic defaults.
+
+When creating charts:
+- Always use the createInlineChart tool first to generate a chart with unique ID
+- Follow up with captureChartScreenshot to analyze the visual appearance
+- Use configureChart with the screenshot analysis results to apply specific optimizations
+- Focus on data mapping, visual clarity, and appropriate styling based on the chart content
+- Generate CSV data that is appropriate for visualizing with the requested chart types
+- Provide up to 6 different chart visualizations that effectively represent the data
+- For each chart, include a title, description, and appropriate chart type (bar, line, pie, heatmap, radar, scatterplot, or areabump)
+- Specify clear data mapping between CSV columns and chart dimensions
+- Choose appropriate column names for categories, values, and groupings
+- Configure chart properties for optimal visualization
+- Ensure data mapping matches the generated CSV structure
+- Use descriptive column names that clearly indicate data meaning
 `;
 
 export const updateDocumentPrompt = (
@@ -125,10 +143,11 @@ Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-        : type === 'chart'
-          ? `\
+        : type === 'chart'          ? `\
 Improve the following chart configurations based on the given prompt. 
+Use the configureChart tool to update chart configurations and data mapping.
 You can modify the CSV data and update or replace any of the chart configurations.
+Ensure data mapping correctly references CSV column names.
 Do not exceed 6 charts total.
 
 ${currentContent}
