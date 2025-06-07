@@ -199,7 +199,7 @@ const PurePreviewMessage = ({
                         <div className="p-4 bg-muted rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-sm font-medium">
-                              Configuring chart...
+                              {args.csvFileUrl ? 'Creating and configuring chart...' : 'Configuring chart...'}
                             </span>
                           </div>
                           <pre className="text-xs text-muted-foreground overflow-auto">
@@ -329,30 +329,67 @@ const PurePreviewMessage = ({
                               description=""
                               data={chart.data}
                               metadata={chart.metadata}
+                              config={chart.config}
                             />
                           ))}
                         </div>
                       ) : toolName === 'configureChart' ? (
                         <div className="space-y-4">
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium">
-                                Chart Configuration Results
-                              </span>
-                            </div>
-                            {result.error ? (
+                          {result.error ? (
+                            <div className="p-4 bg-muted rounded-lg">
                               <div className="text-red-500 text-sm">
                                 Error: {result.error}
                               </div>
-                            ) : (
-                              <div className="text-sm">
-                                <div className="font-medium mb-2">Chart: {result.title}</div>
-                                <div className="text-muted-foreground">
-                                  Type: {result.chartType} | Columns: {result.dataMapping ? Object.values(result.dataMapping).flat().join(', ') : 'N/A'}
+                            </div>
+                          ) : result.chart ? (
+                            // Display the created chart if available
+                            <>
+                              <InlineChart
+                                chartType={result.chart.chartType}
+                                title={result.chart.title}
+                                description={result.chart.description}
+                                data={result.chart.data}
+                                metadata={result.chart.metadata}
+                                config={result.chart.config}
+                              />
+                              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  <span className="text-sm font-medium text-green-800">
+                                    Chart Created Successfully
+                                  </span>
                                 </div>
+                                {result.message && (
+                                  <div className="text-xs text-green-700">
+                                    {result.message}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
+                            </>
+                          ) : (
+                            // Display configuration results without chart
+                            <div className="p-4 bg-muted rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-sm font-medium">
+                                  Chart Configuration Results
+                                </span>
+                              </div>
+                              <div className="text-sm">
+                                <div className="font-medium mb-2">
+                                  Chart: {result.chartConfig?.title || 'Untitled Chart'}
+                                </div>
+                                <div className="text-muted-foreground">
+                                  Type: {result.chartConfig?.chartType || 'Unknown'} | 
+                                  Columns: {result.chartConfig?.dataMapping ? Object.values(result.chartConfig.dataMapping).flat().join(', ') : 'N/A'}
+                                </div>
+                                {result.message && (
+                                  <div className="text-xs text-muted-foreground mt-2">
+                                    {result.message}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : toolName === 'createInlineChart' ? (
                         <div className="space-y-4">
@@ -369,6 +406,7 @@ const PurePreviewMessage = ({
                               description={result.chart.description}
                               data={result.chart.data}
                               metadata={result.chart.metadata}
+                              config={result.chart.config}
                             />
                           ) : null}
                         </div>
@@ -410,6 +448,7 @@ const PurePreviewMessage = ({
                               description={result.chart.description}
                               data={result.chart.data}
                               metadata={result.chart.metadata}
+                              config={result.chart.config}
                             />
                           ) : null}
                         </div>

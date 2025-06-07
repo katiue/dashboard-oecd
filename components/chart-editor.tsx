@@ -25,6 +25,7 @@ interface ChartVisualization {
   title: string;
   description: string;
   data: any;
+  config?: any; // Chart configuration object
 }
 
 export function ChartEditor({
@@ -87,6 +88,7 @@ export function ChartEditor({
             chartType: chart.chartType || 'bar',
             title: chart.title || 'Untitled Chart',
             description: chart.description || '',
+            config: chart.config, // Include the configuration
             // Preserve existing data from the chart content rather than regenerating
             data:
               chart.data ||
@@ -333,6 +335,7 @@ export function ChartEditor({
                       <ChartRenderer
                         chartType={visualization.chartType as ChartType}
                         data={visualization.data}
+                        config={visualization.config}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">

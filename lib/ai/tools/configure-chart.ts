@@ -1,6 +1,8 @@
-import { tool } from 'ai';
+// Utility function for chart configuration - no longer a standalone tool
+// Used internally by chart creation tools
 import { z } from 'zod';
 import type { ChartConfig } from '@/lib/chart/ChartSchemas';
+import { processChartData } from '@/lib/chart/ChartDataProcessor';
 
 // Define Zod schemas for chart configuration
 const BaseConfigSchema = z.object({
@@ -270,86 +272,143 @@ const ChartConfigSchema = z.discriminatedUnion('chartType', [
 ]);
 
 // Helper function to apply screenshot analysis recommendations
-function applyScreenshotRecommendations(config: any, analysis: { recommendations?: string[] }) {
-  if (!analysis.recommendations) return config;
+function applyScreenshotRecommendations(config: any, analysis: { recommendations?: string[]; configurationSuggestions?: any }) {
+  if (!analysis.recommendations && !analysis.configurationSuggestions) return config;
   
   let optimizedConfig = { ...config };
   
-  for (const recommendation of analysis.recommendations) {
-    const lower = recommendation.toLowerCase();
+  // Apply specific configuration suggestions if available
+  if (analysis.configurationSuggestions) {
+    console.log('Applying screenshot configuration suggestions:', analysis.configurationSuggestions);
     
-    // Apply common visual optimizations based on recommendation text
-    if (lower.includes('legend') && lower.includes('bottom')) {
-      if (!optimizedConfig.legends) optimizedConfig.legends = [];
-      if (optimizedConfig.legends.length === 0) {
-        optimizedConfig.legends.push({
-          anchor: 'bottom',
-          direction: 'row',
-          translateY: 56,
-          itemsSpacing: 0,
-          itemWidth: 100,
-          itemHeight: 18,
-        });
+    // Merge configuration suggestions directly
+    Object.keys(analysis.configurationSuggestions).forEach(key => {
+      if (key === 'margin' && optimizedConfig.margin) {
+        optimizedConfig.margin = { ...optimizedConfig.margin, ...analysis.configurationSuggestions[key] };
+      } else if (key === 'colors' && optimizedConfig.colors) {
+        optimizedConfig.colors = { ...optimizedConfig.colors, ...analysis.configurationSuggestions[key] };
+      } else {
+        optimizedConfig[key] = analysis.configurationSuggestions[key];
       }
-    }
-    
-    if (lower.includes('margin') || lower.includes('padding')) {
-      if (!optimizedConfig.margin) optimizedConfig.margin = {};
-      if (lower.includes('left')) optimizedConfig.margin.left = 80;
-      if (lower.includes('bottom')) optimizedConfig.margin.bottom = 80;
-      if (lower.includes('right')) optimizedConfig.margin.right = 40;
-      if (lower.includes('top')) optimizedConfig.margin.top = 40;
-    }
-    
-    if (lower.includes('color') && lower.includes('scheme')) {
-      if (!optimizedConfig.colors) optimizedConfig.colors = {};
-      optimizedConfig.colors.scheme = 'nivo';
-    }
-    
-    if (lower.includes('label') && config.chartType === 'bar') {
-      optimizedConfig.enableLabel = true;
-      optimizedConfig.labelSkipWidth = 12;
-      optimizedConfig.labelSkipHeight = 12;
-    }
-    
-    if (lower.includes('grid')) {
-      if (lower.includes('x')) optimizedConfig.enableGridX = true;
-      if (lower.includes('y')) optimizedConfig.enableGridY = true;
-    }
-    
-    if (lower.includes('animate')) {
-      optimizedConfig.animate = true;
-      optimizedConfig.motionConfig = 'gentle';
+    });
+  }
+  
+  // Also apply text-based recommendations as fallback
+  if (analysis.recommendations) {
+    for (const recommendation of analysis.recommendations) {
+      const lower = recommendation.toLowerCase();
+      
+      // Apply common visual optimizations based on recommendation text
+      if (lower.includes('legend') && lower.includes('bottom')) {
+        if (!optimizedConfig.legends) optimizedConfig.legends = [];
+        if (optimizedConfig.legends.length === 0) {
+          optimizedConfig.legends.push({
+            anchor: 'bottom',
+            direction: 'row',
+            translateY: 56,
+            itemsSpacing: 0,
+            itemWidth: 100,
+            itemHeight: 18,
+          });
+        }
+      }
+      
+      if (lower.includes('margin') || lower.includes('padding')) {
+        if (!optimizedConfig.margin) optimizedConfig.margin = {};
+        if (lower.includes('left')) optimizedConfig.margin.left = 80;
+        if (lower.includes('bottom')) optimizedConfig.margin.bottom = 80;
+        if (lower.includes('right')) optimizedConfig.margin.right = 40;
+        if (lower.includes('top')) optimizedConfig.margin.top = 40;
+      }
+      
+      if (lower.includes('color') && lower.includes('scheme')) {
+        if (!optimizedConfig.colors) optimizedConfig.colors = {};
+        optimizedConfig.colors.scheme = 'nivo';
+      }
+      
+      if (lower.includes('label') && config.chartType === 'bar') {
+        optimizedConfig.enableLabel = true;
+        optimizedConfig.labelSkipWidth = 12;
+        optimizedConfig.labelSkipHeight = 12;
+      }
+      
+      if (lower.includes('grid')) {
+        if (lower.includes('x')) optimizedConfig.enableGridX = true;
+        if (lower.includes('y')) optimizedConfig.enableGridY = true;
+      }
+      
+      if (lower.includes('animate')) {
+        optimizedConfig.animate = true;
+        optimizedConfig.motionConfig = 'gentle';
+      }
     }
   }
   
   return optimizedConfig;
 }
 
-export const configureChart = tool({
-  description: `Configure a chart with specific properties and data mapping. This tool allows you to:
-  1. Specify which CSV columns map to chart data fields
-  2. Configure chart appearance, styling, and behavior
-  3. Set up axes, legends, and other chart elements
+// Generate UUID for chart identification
+function generateUUID(): string {
+  return 'chart-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// Simple CSV parser function
+function parseCSV(csvText: string): { headers: string[], data: Record<string, string>[] } {
+  const lines = csvText.trim().split('\n');
+  if (lines.length === 0) return { headers: [], data: [] };
   
-  IMPORTANT: You can only specify which CSV columns to use for data - you cannot modify the actual CSV data. 
-  Use other CSV tools (filterCsvData, etc.) to manipulate the data first if needed.
+  const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
+  const data = lines.slice(1).map(line => {
+    const values = line.split(',').map(v => v.trim().replace(/['"]/g, ''));
+    const row: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] || '';
+    });
+    return row;
+  });
   
-  Examples:
-  - Bar chart: Map 'product_name' to categories and ['sales', 'profit'] to values
-  - Line chart: Map 'month' to X-axis and ['revenue', 'expenses'] to separate lines
-  - Pie chart: Map 'category' to labels and 'percentage' to values
-  - Scatter: Map 'height' to X, 'weight' to Y, optionally group by 'species'`,
-    parameters: z.object({
-    chartConfig: ChartConfigSchema,
-    csvHeaders: z.array(z.string()).describe('Available CSV column headers to validate mapping against'),
-    chartId: z.string().optional().describe('Unique identifier for the chart being configured'),
-    screenshotAnalysis: z.object({
-      issues: z.array(z.string()).optional().describe('Visual issues detected from screenshot analysis'),
-      recommendations: z.array(z.string()).optional().describe('Configuration recommendations based on visual analysis'),
-    }).optional().describe('Analysis results from chart screenshot'),
-  }),
-    execute: async ({ chartConfig, csvHeaders, chartId, screenshotAnalysis }) => {
+  return { headers, data };
+}
+
+// Parameters interface for the utility function
+interface ConfigureChartParams {
+  chartConfig: ChartConfig;
+  csvHeaders: string[];
+  chartId?: string;
+  screenshotAnalysis?: {
+    issues?: string[];
+    recommendations?: string[];
+    configurationSuggestions?: any;
+  };
+  csvFileUrl?: string;
+  maxDataPoints?: number;
+  existingChartData?: any[];
+}
+
+/**
+ * UNIFIED CHART CREATION UTILITY - Central function for all chart generation and configuration.
+ * It ALWAYS creates a new chart with comprehensive configuration, validation, and optimization.
+ * 
+ * Used by:
+ * - createInlineChart (for inline chart generation)
+ * - Chart document creation (via artifact system)
+ * 
+ * Key behaviors:
+ * 1. ALWAYS creates a new chart visualization with the provided configuration
+ * 2. If csvFileUrl is provided: fetches data and creates chart
+ * 3. If no csvFileUrl but chartId exists: uses existing chart data with new configuration  
+ * 4. Applies visual optimizations and screenshot analysis recommendations
+ * 5. Comprehensive validation of data mappings and column availability
+ */
+export async function configureChart({ 
+  chartConfig, 
+  csvHeaders, 
+  chartId, 
+  screenshotAnalysis, 
+  csvFileUrl, 
+  maxDataPoints = 50, 
+  existingChartData 
+}: ConfigureChartParams) {
     try {
       // Apply screenshot analysis recommendations if provided
       let optimizedConfig = chartConfig;
@@ -435,11 +494,163 @@ export const configureChart = tool({
           error: validationError,
           chartConfig: null,
         };
-      }
+      }      // Always create the actual chart with provided configuration
+      let inlineChart = null;
+      let actualChartId = chartId;
+      let transformedData = null;
+      let dataMetadata = null;
+      
+      try {
+        console.log('=== CHART CREATION: configureChart ===');
+        console.log('Chart Type:', optimizedConfig.chartType);
+        console.log('Title:', optimizedConfig.title);
+        console.log('Chart ID:', chartId);
+        console.log('Has CSV URL:', !!csvFileUrl);
+        console.log('Has existing data:', !!existingChartData);
+        
+        if (csvFileUrl) {
+          // Path 1: Create chart from CSV file URL
+          console.log('Creating chart from CSV file URL...');
+          
+          // Fetch CSV data from the provided URL
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+          console.log('Fetching CSV file from URL for chart creation...');
+          const response = await fetch(csvFileUrl, {
+            signal: controller.signal,
+            headers: {
+              Accept: 'text/csv, text/plain, application/vnd.ms-excel, */*',
+            },
+          });
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            return {
+              error: `Failed to fetch CSV file: ${response.status} ${response.statusText}`,
+              chartConfig: null,
+            };
+          }
+
+          const csvData = await response.text();
+          console.log('CSV data length:', csvData.length, 'characters');
+
+          // Check file size limit (1MB)
+          if (csvData.length > 1024 * 1024) {
+            return {
+              error: 'CSV file is too large. Maximum size is 1MB.',
+              chartConfig: null,
+            };
+          }
+
+          if (!csvData || csvData.trim() === '') {
+            return {
+              error: 'CSV file is empty or could not be read',
+              chartConfig: null,
+            };
+          }
+
+          console.log('Parsing CSV data for chart creation...');
+          const { headers, data } = parseCSV(csvData);
+          console.log('Parsed headers:', headers);
+          console.log('Total data rows:', data.length);
+
+          if (data.length === 0) {
+            return {
+              error: 'No valid data rows found in CSV file',
+              chartConfig: null,
+            };
+          }
+
+          // Process data using the configuration
+          const limitedCsvData = [headers.join(','), ...csvData.trim().split('\n').slice(1, maxDataPoints + 1)].join('\n');
+          transformedData = processChartData(limitedCsvData, optimizedConfig as ChartConfig);
+          
+          dataMetadata = {
+            originalDataCount: data.length,
+            transformedDataCount: Array.isArray(transformedData) ? transformedData.length : 0,
+            dataFields: headers,
+            dataMapping: optimizedConfig.dataMapping,
+            source: 'csv'
+          };
+          
+        } else if (existingChartData && Array.isArray(existingChartData)) {
+          // Path 2: Use existing chart data with new configuration
+          console.log('Using existing chart data with new configuration...');
+          console.log('Existing data points:', existingChartData.length);
+          
+          // Apply the new configuration to existing data
+          // Note: This assumes existingChartData is already in the right format
+          // For a more robust solution, we might need to reverse-engineer the CSV from existing data
+          transformedData = existingChartData.slice(0, maxDataPoints);
+          
+          dataMetadata = {
+            originalDataCount: existingChartData.length,
+            transformedDataCount: transformedData.length,
+            dataFields: [], // We don't have original field info when using existing data
+            dataMapping: optimizedConfig.dataMapping,
+            source: 'existing'
+          };
+          
+        } else {
+          return {
+            error: 'Either csvFileUrl or existingChartData must be provided to create a chart',
+            chartConfig: optimizedConfig,
+          };
+        }
+
+        if (!Array.isArray(transformedData) || transformedData.length === 0) {
+          return {
+            error: 'Failed to transform data for chart or no valid data available',
+            chartConfig: optimizedConfig,
+          };
+        }
+
+        // Create inline chart object
+        actualChartId = actualChartId || generateUUID();
+        console.log('Generated Chart ID:', actualChartId);
+        
+        inlineChart = {
+          type: 'chart-inline',
+          chartId: actualChartId,
+          chartType: optimizedConfig.chartType,
+          title: optimizedConfig.title,
+          description: optimizedConfig.description || '',
+          data: transformedData,
+          config: optimizedConfig,
+          metadata: dataMetadata,
+        };
+
+        console.log('=== Chart Creation Success ===');
+        console.log('Chart created successfully with ID:', actualChartId);
+        console.log('Data source:', dataMetadata.source);
+        console.log('Data points:', dataMetadata.transformedDataCount);
+        
+      } catch (chartError) {
+        console.log('=== Chart Creation Error ===');
+        console.log('Error details:', chartError);
+        
+        if (chartError instanceof Error) {
+          if (chartError.name === 'AbortError') {
+            return {
+              error: 'Request timed out. The CSV file may be too large or the server is not responding.',
+              chartConfig: null,
+            };
+          }
+          return {
+            error: `Failed to create chart: ${chartError.message}`,
+            chartConfig: optimizedConfig,
+          };
+        }
         return {
+          error: 'Failed to create chart: Unknown error',
+          chartConfig: optimizedConfig,
+        };
+      }      return {
         chartConfig: optimizedConfig as ChartConfig,
-        chartId: chartId,
-        message: `Successfully configured ${optimizedConfig.chartType} chart "${optimizedConfig.title}"${chartId ? ` (ID: ${chartId})` : ''} with data mapping: ${JSON.stringify(optimizedConfig.dataMapping)}${screenshotAnalysis?.recommendations ? ` and applied ${screenshotAnalysis.recommendations.length} visual optimizations` : ''}`,
+        chartId: actualChartId,
+        chart: inlineChart, // Always includes the created chart
+        message: `Successfully created ${optimizedConfig.chartType} chart "${optimizedConfig.title}"${actualChartId ? ` (ID: ${actualChartId})` : ''} with data mapping: ${JSON.stringify(optimizedConfig.dataMapping)}${screenshotAnalysis?.recommendations ? ` and applied ${screenshotAnalysis.recommendations.length} visual optimizations` : ''}${inlineChart ? ` - visualization created with ${inlineChart.metadata.transformedDataCount} data points from ${inlineChart.metadata.source} source` : ''}`,
         mappedColumns,
         availableColumns: csvHeaders,
         appliedOptimizations: screenshotAnalysis?.recommendations || [],
@@ -451,5 +662,4 @@ export const configureChart = tool({
         chartConfig: null,
       };
     }
-  },
-});
+}

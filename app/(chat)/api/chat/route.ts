@@ -26,7 +26,6 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { filterCsvData } from '@/lib/ai/tools/filter-csv-data';
 import { readCsvFile } from '@/lib/ai/tools/read-csv-file';
 import { createInlineChart } from '@/lib/ai/tools/create-inline-chart';
-import { configureChart } from '@/lib/ai/tools/configure-chart';
 import { captureChartScreenshot } from '@/lib/ai/tools/capture-chart-screenshot';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider, createProvider } from '@/lib/ai/providers';
@@ -222,7 +221,6 @@ export async function POST(request: Request) {
                   'readCsvFile',
                   'createInlineChart',
                   'captureChartScreenshot',
-                  'configureChart',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -232,13 +230,11 @@ export async function POST(request: Request) {
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({
               session,
-              dataStream,
-            }),
+              dataStream,            }),
             filterCsvData,
             readCsvFile,
             createInlineChart,
             captureChartScreenshot,
-            configureChart,
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {

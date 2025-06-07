@@ -63,16 +63,16 @@ The chart creation process will use the configureChart tool internally to set up
         content: title,
       });
 
-      // Enhanced title with chart context and data mapping guidance
+      // Enhanced title with chart context and data mapping guidance for unified system
       let enhancedTitle = title;
       if (chartType && kind === 'chart') {
-        enhancedTitle = `${title} (${chartType} chart)`;
+        enhancedTitle = `${title} (${chartType} chart - unified configuration system)`;
         
         if (chartDescription) {
           enhancedTitle += ` - ${chartDescription}`;
         }
         
-        // Add data mapping context to the title for the chart generation system
+        // Add data mapping context to the title for the unified chart generation system
         if (suggestedDataMapping) {
           const mappingHints = [];
           if (suggestedDataMapping.indexBy) mappingHints.push(`categories: ${suggestedDataMapping.indexBy}`);
@@ -86,6 +86,9 @@ The chart creation process will use the configureChart tool internally to set up
             enhancedTitle += ` [Data mapping: ${mappingHints.join(', ')}]`;
           }
         }
+        
+        // Add unified system marker
+        enhancedTitle += ` [USE_UNIFIED_CHART_SYSTEM=true]`;
       }
 
       dataStream.writeData({
@@ -123,7 +126,8 @@ The chart creation process will use the configureChart tool internally to set up
         response.chartType = chartType;
         response.chartDescription = chartDescription;
         response.suggestedDataMapping = suggestedDataMapping;
-        response.guidance = `Chart document created. When working with CSV data, use the configureChart tool to specify column mappings. Example mappings for ${chartType} charts: ${JSON.stringify(DATA_MAPPING_EXAMPLES[chartType as keyof typeof DATA_MAPPING_EXAMPLES]?.example || {}, null, 2)}`;
+        response.systemVersion = 'unified-v2';
+        response.guidance = `Chart document created using the unified configuration system. All charts will be created as NEW charts with comprehensive configuration and optimization. When working with CSV data, the system will automatically use configureChart for proper validation and data processing. Example mappings for ${chartType} charts: ${JSON.stringify(DATA_MAPPING_EXAMPLES[chartType as keyof typeof DATA_MAPPING_EXAMPLES]?.example || {}, null, 2)}`;
       }
 
       return response;
