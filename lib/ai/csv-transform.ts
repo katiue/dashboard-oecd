@@ -93,17 +93,27 @@ export function generateCsvSystemPrompt(csvFiles: CsvFile[]): string {
     return '';
   }
 
-  let csvSystemPrompt = `\n\n** IMPORTANT CSV FILES CONTEXT **\n`;
-  csvSystemPrompt += `There are ${csvFiles.length} CSV file(s) available in this conversation:\n`;
+  let csvSystemPrompt = `\n\n** IMPORTANT CSV FILES CONTEXT **\n
+  There are ${csvFiles.length} CSV file(s) available in this conversation:\n`;
   csvFiles.forEach((file, index) => {
     csvSystemPrompt += `${index + 1}. "${file.name}" at URL: ${file.url}\n`;
   });
-  csvSystemPrompt += `\nWhen the user asks about data analysis, charts, or working with data:\n`;
-  csvSystemPrompt += `- Use readCsvFile tool with the exact URLs above\n`;
-  csvSystemPrompt += `- Use createInlineChart tool for visualizations\n`;
-  csvSystemPrompt += `- Use filterCsvData tool for data filtering\n`;
-  csvSystemPrompt += `- NEVER ask the user to upload files - the files are already available\n`;
-  csvSystemPrompt += `- ALWAYS use the exact URLs provided above when calling CSV tools\n`;
+  csvSystemPrompt += `\nWhen the user asks about data analysis, charts, or working with data:\n
+  - ALWAYS start by using readCsvFile tool to understand the data structure\n
+  - IMMEDIATELY use detectAndResolveDuplicates tool if the data contains identifiers (names, IDs, etc.)\n
+   - Use the aggregated data from detectAndResolveDuplicates for all chart creation\n
+   - Use sumEntireColumn tool when you need column totals\n
+   - Use cleanDataForDashboard, resolveDuplicatesForDashboard, or processDataForDashboard to UPDATE the dashboard data tab\n
+   - Use createDashboardChart or createInlineChart tools for visualizations\n
+   - Use filterCsvData tool for data filtering\n
+  - NEVER ask the user to upload files - the files are already available\n
+  - NEVER REVEAL THE URLS TO THE USER - THEY ARE FOR INTERNAL USE ONLY\n
+  - ALWAYS use the exact URLs provided above when calling CSV tools\n
+  \n** CRITICAL DUPLICATE HANDLING **\n
+  If you see duplicate warnings like "67% of Car_Name values are duplicates":\n
+  1. Use detectAndResolveDuplicates tool with the identifier column\n
+  2. Use the aggregatedData result for all subsequent chart creation\n
+  3. This prevents chart errors and provides meaningful insights\n`;
 
   return csvSystemPrompt;
 }

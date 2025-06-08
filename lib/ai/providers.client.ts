@@ -12,24 +12,6 @@ import {
 
 // Function to create provider with optional custom API key - Client version
 export function createProvider(customApiKey?: string) {
-  // Use the provided API key or let the library use the environment variable
-  if (customApiKey) {
-    console.log(
-      `Creating Google provider with custom API key: ${customApiKey.substring(0, 5)}...`,
-    );
-  } else {
-    // Check if the env var is actually set
-    // Using NEXT_PUBLIC_ prefix for client-side env vars
-    const envKey = process.env.NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY;
-    if (envKey) {
-      console.log(
-        `Creating Google provider with env API key: ${envKey.substring(0, 5)}...`,
-      );
-    } else {
-      console.warn('WARNING: No API key found in environment variables');
-    }
-  }
-
   let google: GoogleGenerativeAIProvider;
   try {
     google = createGoogleGenerativeAI(

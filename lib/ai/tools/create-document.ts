@@ -6,7 +6,6 @@ import {
   artifactKinds,
   documentHandlersByArtifactKind,
 } from '@/lib/artifacts/server';
-import { DATA_MAPPING_EXAMPLES } from '@/lib/chart/ChartSchemas';
 
 interface CreateDocumentProps {
   session: Session;
@@ -15,37 +14,14 @@ interface CreateDocumentProps {
 
 export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
   tool({
-    description: `Create a document for writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.
-
-For chart documents, you should specify how to map CSV columns to chart data. Use these data mapping patterns:
-
-${Object.entries(DATA_MAPPING_EXAMPLES).map(([type, example]) => 
-  `${type.toUpperCase()}: ${example.description}\nExample mapping: ${JSON.stringify(example.example, null, 2)}`
-).join('\n\n')}
-
-The chart creation process will use the configureChart tool internally to set up proper data mappings.`,
+    description: `Create a document for writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.`,
 
     parameters: z.object({
       title: z.string().describe('Title for the document'),
       kind: z.enum(artifactKinds).describe('Type of document to create'),
-      chartType: z.enum(['bar', 'line', 'pie', 'heatmap', 'radar', 'scatter', 'areaBump']).optional().describe('The type of chart to create (only applicable when kind is "chart")'),
-      
-      // Chart-specific parameters for better chart generation
-      chartDescription: z.string().optional().describe('Description of what the chart should visualize (for chart documents)'),
-      suggestedDataMapping: z.object({
-        indexBy: z.string().optional(),
-        valueColumns: z.array(z.string()).optional(),
-        xColumn: z.string().optional(),
-        yColumn: z.string().optional(),
-        yColumns: z.array(z.string()).optional(),
-        idColumn: z.string().optional(),
-        valueColumn: z.string().optional(),
-        seriesColumn: z.string().optional(),
-        seriesColumns: z.array(z.string()).optional(),
-      }).optional().describe('Suggested column mappings for the chart (for chart documents)'),
     }),
     
-    execute: async ({ title, kind, chartType, chartDescription, suggestedDataMapping }) => {
+    execute: async ({ title, kind }) => {
       const id = generateUUID();
 
       dataStream.writeData({
@@ -63,33 +39,8 @@ The chart creation process will use the configureChart tool internally to set up
         content: title,
       });
 
-      // Enhanced title with chart context and data mapping guidance for unified system
-      let enhancedTitle = title;
-      if (chartType && kind === 'chart') {
-        enhancedTitle = `${title} (${chartType} chart - unified configuration system)`;
-        
-        if (chartDescription) {
-          enhancedTitle += ` - ${chartDescription}`;
-        }
-        
-        // Add data mapping context to the title for the unified chart generation system
-        if (suggestedDataMapping) {
-          const mappingHints = [];
-          if (suggestedDataMapping.indexBy) mappingHints.push(`categories: ${suggestedDataMapping.indexBy}`);
-          if (suggestedDataMapping.valueColumns) mappingHints.push(`values: ${suggestedDataMapping.valueColumns.join(', ')}`);
-          if (suggestedDataMapping.xColumn) mappingHints.push(`x-axis: ${suggestedDataMapping.xColumn}`);
-          if (suggestedDataMapping.yColumns) mappingHints.push(`y-lines: ${suggestedDataMapping.yColumns.join(', ')}`);
-          if (suggestedDataMapping.idColumn) mappingHints.push(`labels: ${suggestedDataMapping.idColumn}`);
-          if (suggestedDataMapping.valueColumn) mappingHints.push(`values: ${suggestedDataMapping.valueColumn}`);
-          
-          if (mappingHints.length > 0) {
-            enhancedTitle += ` [Data mapping: ${mappingHints.join(', ')}]`;
-          }
-        }
-        
-        // Add unified system marker
-        enhancedTitle += ` [USE_UNIFIED_CHART_SYSTEM=true]`;
-      }
+      // Use title as-is for all document types
+      const enhancedTitle = title;
 
       dataStream.writeData({
         type: 'clear',
@@ -114,22 +65,12 @@ The chart creation process will use the configureChart tool internally to set up
 
       dataStream.writeData({ type: 'finish', content: '' });
 
-      // Prepare response with chart-specific guidance
-      const response: any = {
+      // Return standard response for all document types
+      return {
         id,
         title: enhancedTitle,
         kind,
         content: 'A document was created and is now visible to the user.',
       };
-
-      if (kind === 'chart') {
-        response.chartType = chartType;
-        response.chartDescription = chartDescription;
-        response.suggestedDataMapping = suggestedDataMapping;
-        response.systemVersion = 'unified-v2';
-        response.guidance = `Chart document created using the unified configuration system. All charts will be created as NEW charts with comprehensive configuration and optimization. When working with CSV data, the system will automatically use configureChart for proper validation and data processing. Example mappings for ${chartType} charts: ${JSON.stringify(DATA_MAPPING_EXAMPLES[chartType as keyof typeof DATA_MAPPING_EXAMPLES]?.example || {}, null, 2)}`;
-      }
-
-      return response;
     },
   });

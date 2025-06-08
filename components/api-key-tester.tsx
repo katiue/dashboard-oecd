@@ -44,7 +44,6 @@ export function ApiKeyTester() {
         });
       } else {
         setValidationStatus('invalid');
-        console.log('API Key Error Details:', result);
         toast({
           type: 'error',
           description: `${result.error || 'API key test failed'}: ${result.details || 'No additional details available'}`,

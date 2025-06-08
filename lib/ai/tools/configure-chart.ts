@@ -1,8 +1,8 @@
 // Utility function for chart configuration - no longer a standalone tool
 // Used internally by chart creation tools
 import { z } from 'zod';
-import type { ChartConfig } from '@/lib/chart/ChartSchemas';
-import { processChartData } from '@/lib/chart/ChartDataProcessor';
+import type { ChartConfig } from '@/lib/chart/UnifiedChartRenderer';
+import { processChartData } from '@/lib/chart/UnifiedChartDataProcessor';
 
 // Define Zod schemas for chart configuration
 const BaseConfigSchema = z.object({
@@ -279,7 +279,6 @@ function applyScreenshotRecommendations(config: any, analysis: { recommendations
   
   // Apply specific configuration suggestions if available
   if (analysis.configurationSuggestions) {
-    console.log('Applying screenshot configuration suggestions:', analysis.configurationSuggestions);
     
     // Merge configuration suggestions directly
     Object.keys(analysis.configurationSuggestions).forEach(key => {
@@ -501,22 +500,13 @@ export async function configureChart({
       let dataMetadata = null;
       
       try {
-        console.log('=== CHART CREATION: configureChart ===');
-        console.log('Chart Type:', optimizedConfig.chartType);
-        console.log('Title:', optimizedConfig.title);
-        console.log('Chart ID:', chartId);
-        console.log('Has CSV URL:', !!csvFileUrl);
-        console.log('Has existing data:', !!existingChartData);
         
         if (csvFileUrl) {
-          // Path 1: Create chart from CSV file URL
-          console.log('Creating chart from CSV file URL...');
           
           // Fetch CSV data from the provided URL
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-          console.log('Fetching CSV file from URL for chart creation...');
           const response = await fetch(csvFileUrl, {
             signal: controller.signal,
             headers: {
@@ -533,15 +523,6 @@ export async function configureChart({
           }
 
           const csvData = await response.text();
-          console.log('CSV data length:', csvData.length, 'characters');
-
-          // Check file size limit (1MB)
-          if (csvData.length > 1024 * 1024) {
-            return {
-              error: 'CSV file is too large. Maximum size is 1MB.',
-              chartConfig: null,
-            };
-          }
 
           if (!csvData || csvData.trim() === '') {
             return {
@@ -550,10 +531,7 @@ export async function configureChart({
             };
           }
 
-          console.log('Parsing CSV data for chart creation...');
           const { headers, data } = parseCSV(csvData);
-          console.log('Parsed headers:', headers);
-          console.log('Total data rows:', data.length);
 
           if (data.length === 0) {
             return {
@@ -564,7 +542,7 @@ export async function configureChart({
 
           // Process data using the configuration
           const limitedCsvData = [headers.join(','), ...csvData.trim().split('\n').slice(1, maxDataPoints + 1)].join('\n');
-          transformedData = processChartData(limitedCsvData, optimizedConfig as ChartConfig);
+          transformedData = processChartData(optimizedConfig.chartType as any, limitedCsvData, optimizedConfig as ChartConfig);
           
           dataMetadata = {
             originalDataCount: data.length,
@@ -575,13 +553,6 @@ export async function configureChart({
           };
           
         } else if (existingChartData && Array.isArray(existingChartData)) {
-          // Path 2: Use existing chart data with new configuration
-          console.log('Using existing chart data with new configuration...');
-          console.log('Existing data points:', existingChartData.length);
-          
-          // Apply the new configuration to existing data
-          // Note: This assumes existingChartData is already in the right format
-          // For a more robust solution, we might need to reverse-engineer the CSV from existing data
           transformedData = existingChartData.slice(0, maxDataPoints);
           
           dataMetadata = {
@@ -608,7 +579,6 @@ export async function configureChart({
 
         // Create inline chart object
         actualChartId = actualChartId || generateUUID();
-        console.log('Generated Chart ID:', actualChartId);
         
         inlineChart = {
           type: 'chart-inline',
@@ -621,14 +591,8 @@ export async function configureChart({
           metadata: dataMetadata,
         };
 
-        console.log('=== Chart Creation Success ===');
-        console.log('Chart created successfully with ID:', actualChartId);
-        console.log('Data source:', dataMetadata.source);
-        console.log('Data points:', dataMetadata.transformedDataCount);
         
       } catch (chartError) {
-        console.log('=== Chart Creation Error ===');
-        console.log('Error details:', chartError);
         
         if (chartError instanceof Error) {
           if (chartError.name === 'AbortError') {

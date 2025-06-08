@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon } from '@/components/icons';
-import ChartRenderer, { type ChartType } from '@/lib/chart/ChartRenderer';
-import type { ChartConfig } from '@/lib/chart/ChartSchemas';
+import { UnifiedChartRenderer, type ChartType, type ChartConfig } from '@/lib/chart/UnifiedChartRenderer';
 
 interface InlineChartProps {
   chartType: ChartType;
@@ -51,8 +50,8 @@ export function InlineChart({
     // All possible chart attributes with their current values (using type-safe access)
     allAttributes: {
       // Basic properties
-      animate: config?.animate,
-      theme: config?.theme,
+      animate: (config as any)?.animate,
+      theme: (config as any)?.theme,
       
       // Colors and styling
       colors: config?.colors,
@@ -267,10 +266,10 @@ export function InlineChart({
           data-testid={chartId ? `chart-${chartId}` : undefined}
         >
           {data && Array.isArray(data) && data.length > 0 ? (
-            <ChartRenderer
+            <UnifiedChartRenderer
               chartType={chartType}
               data={data}
-              config={config}
+              config={config as ChartConfig}
             />
           ) : (
             <div className="flex size-full items-center justify-center">

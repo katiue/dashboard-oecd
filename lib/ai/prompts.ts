@@ -33,7 +33,7 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.\n\nWhen working with CSV data and charts, follow this enhanced workflow:\n1. Use readCsvFile tool to read and analyze CSV data structure\n2. Use createInlineChart tool to create initial chart visualizations with unique IDs\n3. After creating a chart, use captureChartScreenshot tool to analyze the visual appearance\n4. Use configureChart tool with screenshot analysis results to optimize chart configuration\n5. The workflow creates personalized, optimized charts instead of using default settings\n\nChart creation guidelines:\n- Automatically create chart visualizations to help users understand their data\n- Each chart gets a unique ID for tracking and optimization\n- Prefer inline chart visualizations for quick data exploration\n- Suggest appropriate chart types based on the data characteristics\n- For datasets with categorical and numeric data, consider bar and pie charts\n- For time-series or sequential data, consider line charts\n- For multi-dimensional data, consider scatter plots or radar charts\n- When configuring charts, always specify which CSV columns to use for different chart dimensions\n- You can only configure chart properties and data mapping - CSV data manipulation is handled by specific tools\n- Follow the create → screenshot → configure workflow for optimal results';
+  'You are a friendly assistant! Keep your responses concise and helpful.\n\nWhen working with CSV data and dashboards:\n\n**Data Quality and Preparation:**\n- ALWAYS use `detectAndResolveDuplicates` tool FIRST when working with CSV data that contains identifiers (like names, IDs, product codes)\n- If duplicate percentage > 10%, the tool will automatically aggregate rows by summing numeric columns\n- Use `sumEntireColumn` tool when you need total values for analysis or reporting\n- Use `cleanData`, `filterData`, and `transformData` tools for data preprocessing\n\n**OECD Patent Data Specialized Tools:**\n- Use `loadOECDPatentData` for loading and validating OECD patent datasets with comprehensive quality assessment\n- Use `cleanOECDPatentData` for specialized cleaning of patent data (country standardization, year validation, technology field normalization)\n- Use `preparePatentDataForVisualization` for advanced visualization preparation with filtering, brushing/linking, and dynamic updates\n- These tools handle patent-specific data structures, missing values, and format standardization\n- Perfect for country comparisons, technology trends, temporal analysis, and innovation metrics\n\n**Dashboard Data Tab Integration:**\n- Use `cleanDataForDashboard` to clean data and UPDATE the dashboard data tab\n- Use `resolveDuplicatesForDashboard` to resolve duplicates and UPDATE the dashboard data tab\n- Use `processDataForDashboard` for comprehensive data processing and UPDATE the dashboard data tab\n- These tools send processed data directly to the dashboard for immediate use\n\n**CRITICAL DUPLICATE HANDLING:**\nWhen you see warnings like "HIGH DUPLICATE WARNING: 67% of Car_Name values are duplicates":\n1. Immediately use `detectAndResolveDuplicates` with the identifier column (e.g., Car_Name)\n2. Use the aggregated data for all subsequent chart creation\n3. This prevents visualization errors and provides meaningful insights\n\n**Interactive Dashboard Building:**\n- Use `createDashboardChart` tool to create individual charts one at a time\n- Each chart comes with detailed commentary and analysis\n- Build dashboards incrementally with explanations for each visualization\n- Perfect for step-by-step data exploration and focused analysis\n- Always ask users what specific aspect they want to explore next\n\n**Individual Chart Analysis:**\n- Use `createInlineChart` tool for quick single chart creation and testing\n- Follow with `captureChartScreenshot` and `configureChart` for optimization\n- Best for focused analysis of specific data relationships\n\nDashboard building guidelines:\n- Default approach: Use `createDashboardChart` for interactive building with commentary\n- Always provide detailed commentary about what each visualization reveals\n- Suggest appropriate chart types based on the data characteristics:\n  - Categorical + numeric data → bar and pie charts\n  - Time-series data → line charts\n  - Multi-dimensional data → scatter plots or radar charts\n  - Pattern analysis → heatmaps\n- When creating charts, always specify which CSV columns to use for different dimensions\n- Ask users what insights they want to discover to guide chart selection\n- Build dashboards progressively, explaining each chart\'s purpose and findings';
 
 export interface RequestHints {
   latitude: Geo['latitude'];
@@ -124,32 +124,27 @@ When creating charts:
 export const updateDocumentPrompt = (
   currentContent: string | null,
   type: ArtifactKind,
-) =>
-  type === 'text'
-    ? `\
+) => {
+  switch (type) {
+    case 'text':
+      return `\
 Improve the following contents of the document based on the given prompt.
 
 ${currentContent}
-`
-    : type === 'code'
-      ? `\
+`;
+    case 'code':
+      return `\
 Improve the following code snippet based on the given prompt.
 
 ${currentContent}
-`
-      : type === 'sheet'
-        ? `\
+`;
+    case 'sheet':
+      return `\
 Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
-`
-        : type === 'chart'          ? `\
-Improve the following chart configurations based on the given prompt. 
-Use the configureChart tool to update chart configurations and data mapping.
-You can modify the CSV data and update or replace any of the chart configurations.
-Ensure data mapping correctly references CSV column names.
-Do not exceed 6 charts total.
-
-${currentContent}
-`
-          : '';
+`;
+    default:
+      return '';
+  }
+};

@@ -8,6 +8,7 @@ import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import type { DBMessage } from '@/lib/db/schema';
 import type { Attachment, UIMessage } from 'ai';
+import { DashboardProvider } from '@/hooks/use-dashboard';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -56,7 +57,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   if (!chatModelFromCookie) {
     return (
-      <>
+      <DashboardProvider>
         <Chat
           id={chat.id}
           initialMessages={convertToUIMessages(messagesFromDb)}
@@ -67,12 +68,12 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           autoResume={true}
         />
         <DataStreamHandler id={id} />
-      </>
+      </DashboardProvider>
     );
   }
 
   return (
-    <>
+    <DashboardProvider>
       <Chat
         id={chat.id}
         initialMessages={convertToUIMessages(messagesFromDb)}
@@ -83,6 +84,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         autoResume={true}
       />
       <DataStreamHandler id={id} />
-    </>
+    </DashboardProvider>
   );
 }

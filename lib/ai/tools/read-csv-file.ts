@@ -74,7 +74,6 @@ export const readCsvFile = tool({
       }
 
       const contentType = response.headers.get('content-type');
-      console.log('Content-Type:', contentType);
       
       if (
         contentType &&
@@ -83,7 +82,6 @@ export const readCsvFile = tool({
         !contentType.includes('application/vnd.ms-excel')
       ) {
         const errorMsg = 'File does not appear to be a CSV file';
-        console.log('Error:', errorMsg);
         return {
           error: errorMsg,
           content: '',
@@ -94,24 +92,10 @@ export const readCsvFile = tool({
       }
       
       const content = await response.text();
-      console.log('Content length:', content.length, 'characters');
 
-      // Check file size limit (1MB)
-      if (content.length > 1024 * 1024) {
-        const errorMsg = 'File is too large. Maximum size is 1MB.';
-        console.log('Error:', errorMsg);
-        return {
-          error: errorMsg,
-          content: '',
-          columns: [],
-          sampleData: [],
-          totalRows: 0,
-        };
-      }
 
-            if (!content || content.trim() === '') {
+      if (!content || content.trim() === '') {
         const errorMsg = 'File is empty or could not be read';
-        console.log('Error:', errorMsg);
         return {
           error: errorMsg,
           content: '',
@@ -121,15 +105,11 @@ export const readCsvFile = tool({
         };
       }
 
-      console.log('Parsing CSV content...');
       // Parse the CSV data
       const { headers, data } = parseCSV(content);
-      console.log('Parsed headers:', headers);
-      console.log('Total data rows:', data.length);
 
       if (data.length === 0) {
         const errorMsg = 'No valid data rows found in CSV';
-        console.log('Error:', errorMsg);
         return {
           error: errorMsg,
           content,
@@ -166,10 +146,6 @@ export const readCsvFile = tool({
       // Get 10 random data rows
       const sampleData = getRandomSample(data, 10);
       
-      console.log('Column analysis:', columns.map(col => `${col.name} (${col.type})`));
-      console.log('Sample data rows:', sampleData.length);
-      console.log('=== END CSV TOOL EXECUTION ===');
-      
       return {
         content,
         columns,
@@ -179,10 +155,6 @@ export const readCsvFile = tool({
         size: content.length,
         message: `Successfully read CSV file with ${data.length} rows and ${columns.length} columns. Showing ${sampleData.length} random sample rows for analysis. To create charts or visualizations, use chart creation tools which will process the full dataset.`,
       };    } catch (error) {
-      console.log('=== CSV TOOL ERROR ===');
-      console.log('Error details:', error);
-      console.log('File URL:', fileUrl);
-      console.log('======================');
       
       if (error instanceof Error) {
         if (error.name === 'AbortError') {

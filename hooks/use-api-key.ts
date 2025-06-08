@@ -12,14 +12,11 @@ export function useApiKey() {
       // Use a consistent key for storing API keys
       const storedApiKey = localStorage.getItem('userApiKey');
       if (storedApiKey) {
-        console.log(
-          `Loaded API key from localStorage: ${storedApiKey.substring(0, 5)}...`,
-        );
         setApiKey(storedApiKey);
       }
     } catch (error) {
       // This can happen in environments where localStorage is not available (SSR)
-      console.error('Error loading API key from localStorage:', error);
+      console.error('Error loading API key:', error);
     }
   }, []);
 
@@ -29,7 +26,6 @@ export function useApiKey() {
       if (event.key === 'userApiKey') {
         const newValue = event.newValue;
         if (newValue !== apiKey) {
-          console.log('API key changed in another tab');
           setApiKey(newValue || '');
         }
       }
@@ -49,13 +45,11 @@ export function useApiKey() {
 
     // If the key is empty, remove it from localStorage
     if (!newApiKey) {
-      console.log('Clearing custom API key');
       localStorage.removeItem('userApiKey');
       return;
     }
 
     // Otherwise store it
-    console.log(`Setting new API key: ${newApiKey.substring(0, 5)}...`);
     localStorage.setItem('userApiKey', newApiKey);
   };
 

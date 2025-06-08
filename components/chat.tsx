@@ -69,9 +69,6 @@ export function Chat({
     fetch: async (url, options = {}) => {
       // If we have a custom API key, add it to the Authorization header
       if (apiKey) {
-        console.log(
-          `Using custom API key in fetch: ${apiKey.substring(0, 5)}...`,
-        );
 
         // Ensure headers object exists
         if (!options.headers) {
@@ -156,6 +153,8 @@ export function Chat({
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}
+          messages={messages}
+          append={append}
         />
 
         <Messages

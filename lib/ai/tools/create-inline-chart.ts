@@ -1,7 +1,30 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { DATA_MAPPING_EXAMPLES } from '@/lib/chart/ChartSchemas';
-import { configureChart } from './configure-chart';
+import { 
+  processChartData, 
+  validateCsvForChart, 
+  getAvailableChartTypes,
+  type ChartType, 
+  type ChartConfig 
+} from '@/lib/chart/UnifiedChartDataProcessor';
+
+// Fallback list of supported chart types
+const SUPPORTED_CHART_TYPES = [
+  'scatter', 'bar', 'line', 'pie', 'heatmap', 'radar', 'areaBump',
+  'calendar', 'chord', 'circlePacking', 'sankey', 'boxplot',
+  'bump', 'bullet', 'funnel', 'stream', 'sunburst', 'waffle',
+  'network', 'radialbar', 'swarmplot', 'treemap', 'voronoi'
+] as const;
+
+// Function to get available chart types with fallback
+function getSupportedChartTypes(): readonly string[] {
+  try {
+    return getAvailableChartTypes();
+  } catch (error) {
+    console.warn('Chart system not fully available, using fallback types:', error);
+    return SUPPORTED_CHART_TYPES;
+  }
+}
 
 // Simple CSV parser function for header extraction
 function parseCSVHeaders(csvText: string): string[] {
@@ -14,23 +37,29 @@ function parseCSVHeaders(csvText: string): string[] {
 export const createInlineChart = tool({
   description: `Create an inline chart visualization from a CSV file URL that will be rendered directly in the chat. 
 
-IMPORTANT: This tool now uses the comprehensive chart configuration system and ALWAYS creates a new chart with proper configuration and optimization.
+IMPORTANT: This tool uses the UNIFIED CHART SYSTEM for consistency and maintainability. It leverages:
+- Unified chart registry for all chart types
+- Standardized data validation and processing
+- Consistent configuration schemas
+- Server-safe imports for all chart utilities
 
 CRITICAL: When a user uploads a CSV file, use the attachment URL from the conversation context - DO NOT use placeholder URLs like "https://file.csv" or "https://filebin.net/...".
 
-Use these data mapping patterns:
+Available chart types: ${getAvailableChartTypes().join(', ')}
 
-${Object.entries(DATA_MAPPING_EXAMPLES).map(([type, example]) => 
-  `${type.toUpperCase()}: ${example.description}\nExample: ${JSON.stringify(example.example, null, 2)}`
-).join('\n\n')}
+The unified chart system provides:
+- Consistent data validation and processing
+- Standardized configuration schemas  
+- Automatic column mapping and optimization
+- Support for all chart types in the registry
 
 The tool will automatically fetch the CSV file, parse all the data, and configure the chart with comprehensive optimization and validation.`,
   
   parameters: z.object({
     fileUrl: z.string().describe('The URL of the CSV file to fetch and create a chart from - MUST be the actual file URL from attachments, not a placeholder'),
-    chartType: z.enum(['bar', 'line', 'pie', 'heatmap', 'radar', 'scatter', 'areaBump']).describe('The type of chart to create'),
+    chartType: z.enum(getSupportedChartTypes() as any).describe('The type of chart to create'),
     title: z.string().describe('The title for the chart'),
-    description: z.string().optional().describe('Optional description for the chart'),
+    description: z.string().default('').describe('Optional description for the chart'),
     
     // Data mapping parameters - the agent specifies which columns to use
     indexBy: z.string().optional().describe('Column name for categories/labels (for bar, radar charts)'),
@@ -54,11 +83,11 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
     
     // Advanced Scale Configuration
     xScaleType: z.enum(['linear', 'log', 'symlog', 'time', 'point']).optional().describe('X-axis scale type'),
-    xScaleMin: z.union([z.number(), z.literal('auto')]).optional().describe('X-axis minimum value'),
-    xScaleMax: z.union([z.number(), z.literal('auto')]).optional().describe('X-axis maximum value'),
+    xScaleMin: z.string().optional().describe('X-axis minimum value (number or "auto")'),
+    xScaleMax: z.string().optional().describe('X-axis maximum value (number or "auto")'),
     yScaleType: z.enum(['linear', 'log', 'symlog', 'time']).optional().describe('Y-axis scale type'),
-    yScaleMin: z.union([z.number(), z.literal('auto')]).optional().describe('Y-axis minimum value'),
-    yScaleMax: z.union([z.number(), z.literal('auto')]).optional().describe('Y-axis maximum value'),
+    yScaleMin: z.string().optional().describe('Y-axis minimum value (number or "auto")'),
+    yScaleMax: z.string().optional().describe('Y-axis maximum value (number or "auto")'),
     
     // Layout and styling
     marginTop: z.number().min(0).max(100).optional().describe('Top margin'),
@@ -83,19 +112,12 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
     marginTop, marginRight, marginBottom, marginLeft,
     nodeSize, enablePoints, pointSize, enableCrosshair, innerRadius, enableLabels, curve
   }) => {
-    console.log('=== UNIFIED CHART CREATION: createInlineChart ===');
-    console.log('File URL:', fileUrl);
-    console.log('Chart Type:', chartType);
-    console.log('Title:', title);
-    console.log('Max Data Points:', maxDataPoints);
-    console.log('Timestamp:', new Date().toISOString());
     
     try {
       // First, fetch CSV to get headers for validation
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      console.log('Fetching CSV file to extract headers...');
       const response = await fetch(fileUrl, {
         signal: controller.signal,
         headers: {
@@ -127,13 +149,11 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
         };
       }
 
-      console.log('CSV headers extracted:', csvHeaders);
-
       // Build chart configuration using the same structure as configureChart
       const chartConfig: any = {
         chartType,
         title,
-        description,
+        description: description || '',
         margin: { top: marginTop || 50, right: marginRight || 130, bottom: marginBottom || 50, left: marginLeft || 60 },
         colors: { 
           scheme: colorScheme || 'nivo' 
@@ -166,7 +186,6 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
             indexBy: indexBy || csvHeaders.find(h => typeof csvData.split('\n')[1]?.split(',')[csvHeaders.indexOf(h)] === 'string') || csvHeaders[0],
             valueColumns: valueColumns || csvHeaders.filter(h => h !== chartConfig.dataMapping?.indexBy).slice(0, 3)
           };
-          // Add bar-specific optimizations
           chartConfig.enableLabel = true;
           chartConfig.labelSkipWidth = 12;
           chartConfig.labelSkipHeight = 12;
@@ -177,25 +196,23 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
             xColumn: xColumn || csvHeaders[0],
             yColumns: yColumns || csvHeaders.slice(1, 4)
           };
-          // Add line-specific optimizations
           chartConfig.enablePoints = enablePoints !== false;
           chartConfig.pointSize = pointSize || 8;
           chartConfig.enableCrosshair = enableCrosshair !== false;
           if (curve) chartConfig.curve = curve;
           
-          // Add scale configuration
           if (xScaleType || xScaleMin !== undefined || xScaleMax !== undefined) {
             chartConfig.xScale = {
               type: xScaleType || 'point',
-              ...(xScaleMin !== undefined && { min: xScaleMin }),
-              ...(xScaleMax !== undefined && { max: xScaleMax })
+              ...(xScaleMin !== undefined && { min: xScaleMin === 'auto' ? 'auto' : parseFloat(xScaleMin) || 'auto' }),
+              ...(xScaleMax !== undefined && { max: xScaleMax === 'auto' ? 'auto' : parseFloat(xScaleMax) || 'auto' })
             };
           }
           if (yScaleType || yScaleMin !== undefined || yScaleMax !== undefined) {
             chartConfig.yScale = {
               type: yScaleType || 'linear',
-              ...(yScaleMin !== undefined && { min: yScaleMin }),
-              ...(yScaleMax !== undefined && { max: yScaleMax })
+              ...(yScaleMin !== undefined && { min: yScaleMin === 'auto' ? 'auto' : parseFloat(yScaleMin) || 'auto' }),
+              ...(yScaleMax !== undefined && { max: yScaleMax === 'auto' ? 'auto' : parseFloat(yScaleMax) || 'auto' })
             };
           }
           break;
@@ -205,7 +222,6 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
             idColumn: idColumn || csvHeaders[0],
             valueColumn: valueColumn || csvHeaders[1]
           };
-          // Add pie-specific optimizations
           chartConfig.enableArcLabels = true;
           chartConfig.enableArcLinkLabels = true;
           chartConfig.innerRadius = innerRadius || 0.5;
@@ -217,7 +233,6 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
             yColumn: yColumn || csvHeaders[1],
             valueColumn: valueColumn || csvHeaders[2]
           };
-          // Add heatmap-specific optimizations
           chartConfig.enableLabels = enableLabels !== false;
           chartConfig.colorScale = { scheme: 'blues' };
           break;
@@ -227,7 +242,6 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
             indexBy: indexBy || csvHeaders[0],
             valueColumns: valueColumns || csvHeaders.slice(1, 6)
           };
-          // Add radar-specific optimizations
           chartConfig.enableDots = true;
           chartConfig.dotSize = 8;
           chartConfig.fillOpacity = 0.25;
@@ -240,23 +254,21 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
             seriesColumn: seriesColumn,
             sizeColumn: sizeColumn
           };
-          // Add scatter-specific optimizations
           chartConfig.nodeSize = nodeSize || 10;
           chartConfig.useMesh = true;
           
-          // Add scale configuration for scatter plots
           if (xScaleType || xScaleMin !== undefined || xScaleMax !== undefined) {
             chartConfig.xScale = {
               type: xScaleType || 'linear',
-              ...(xScaleMin !== undefined && { min: xScaleMin }),
-              ...(xScaleMax !== undefined && { max: xScaleMax })
+              ...(xScaleMin !== undefined && { min: xScaleMin === 'auto' ? 'auto' : parseFloat(xScaleMin) || 'auto' }),
+              ...(xScaleMax !== undefined && { max: xScaleMax === 'auto' ? 'auto' : parseFloat(xScaleMax) || 'auto' })
             };
           }
           if (yScaleType || yScaleMin !== undefined || yScaleMax !== undefined) {
             chartConfig.yScale = {
               type: yScaleType || 'linear',
-              ...(yScaleMin !== undefined && { min: yScaleMin }),
-              ...(yScaleMax !== undefined && { max: yScaleMax })
+              ...(yScaleMin !== undefined && { min: yScaleMin === 'auto' ? 'auto' : parseFloat(yScaleMin) || 'auto' }),
+              ...(yScaleMax !== undefined && { max: yScaleMax === 'auto' ? 'auto' : parseFloat(yScaleMax) || 'auto' })
             };
           }
           break;
@@ -266,9 +278,132 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
             xColumn: xColumn || csvHeaders[0],
             seriesColumns: seriesColumns || csvHeaders.slice(1, 5)
           };
-          // Add area bump specific optimizations
           chartConfig.interpolation = 'smooth';
           chartConfig.spacing = 8;
+          break;
+
+        // New chart types
+        case 'calendar':
+          chartConfig.dataMapping = {
+            dateColumn: xColumn || csvHeaders[0],
+            valueColumn: valueColumn || csvHeaders[1]
+          };
+          break;
+
+        case 'chord':
+          chartConfig.dataMapping = {
+            fromColumn: xColumn || csvHeaders[0],
+            toColumn: yColumn || csvHeaders[1],
+            valueColumn: valueColumn || csvHeaders[2]
+          };
+          break;
+
+        case 'circlePacking':
+          chartConfig.dataMapping = {
+            idColumn: idColumn || csvHeaders[0],
+            valueColumn: valueColumn || csvHeaders[1],
+            parentColumn: indexBy
+          };
+          break;
+
+        case 'sankey':
+          chartConfig.dataMapping = {
+            sourceColumn: xColumn || csvHeaders[0],
+            targetColumn: yColumn || csvHeaders[1],
+            valueColumn: valueColumn || csvHeaders[2]
+          };
+          break;
+
+        case 'boxplot':
+          chartConfig.dataMapping = {
+            groupBy: indexBy || csvHeaders[0],
+            value: valueColumn || csvHeaders[1],
+            subGroup: seriesColumn
+          };
+          break;
+
+        case 'bump':
+          chartConfig.dataMapping = {
+            xColumn: xColumn || csvHeaders[0],
+            seriesColumns: seriesColumns || csvHeaders.slice(1, 5)
+          };
+          break;
+
+        case 'bullet':
+          chartConfig.dataMapping = {
+            idColumn: idColumn || csvHeaders[0],
+            actualColumn: valueColumn || csvHeaders[1],
+            targetColumn: csvHeaders[2]
+          };
+          break;
+
+        case 'funnel':
+          chartConfig.dataMapping = {
+            idColumn: idColumn || csvHeaders[0],
+            valueColumn: valueColumn || csvHeaders[1]
+          };
+          break;
+
+        case 'stream':
+          chartConfig.dataMapping = {
+            xColumn: xColumn || csvHeaders[0],
+            valueColumns: valueColumns || csvHeaders.slice(1, 5)
+          };
+          break;
+
+        case 'sunburst':
+          chartConfig.dataMapping = {
+            idColumn: idColumn || csvHeaders[0],
+            valueColumn: valueColumn || csvHeaders[1],
+            parentColumn: indexBy
+          };
+          break;
+
+        case 'waffle':
+          chartConfig.dataMapping = {
+            idColumn: idColumn || csvHeaders[0],
+            valueColumn: valueColumn || csvHeaders[1]
+          };
+          break;
+
+        case 'network':
+          chartConfig.dataMapping = {
+            nodeIdColumn: idColumn || csvHeaders[0],
+            linkSourceColumn: xColumn || csvHeaders[0],
+            linkTargetColumn: yColumn || csvHeaders[1],
+            linkValueColumn: valueColumn
+          };
+          break;
+
+        case 'radialbar':
+          chartConfig.dataMapping = {
+            idColumn: idColumn || csvHeaders[0],
+            valueColumn: valueColumn || csvHeaders[1]
+          };
+          break;
+
+        case 'swarmplot':
+          chartConfig.dataMapping = {
+            groupBy: indexBy || csvHeaders[0],
+            value: valueColumn || csvHeaders[1],
+            size: sizeColumn
+          };
+          break;
+
+        case 'treemap':
+          chartConfig.dataMapping = {
+            idColumn: idColumn || csvHeaders[0],
+            valueColumn: valueColumn || csvHeaders[1],
+            parentColumn: indexBy
+          };
+          break;
+
+        case 'voronoi':
+          chartConfig.dataMapping = {
+            xColumn: xColumn || csvHeaders[0],
+            yColumn: yColumn || csvHeaders[1],
+            idColumn: idColumn
+          };
           break;
         
         default:
@@ -278,46 +413,46 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
           };
       }
 
-      console.log('Built chart configuration:', chartConfig);
-      console.log('Data mapping:', chartConfig.dataMapping);
-
-      // Use configureChart utility to handle the actual chart creation with full validation and optimization
-      const configureResult = await configureChart({
-        chartConfig,
-        csvHeaders,
-        csvFileUrl: fileUrl,
-        maxDataPoints,
-      });
-
-      if (configureResult.error) {
-        console.log('Configure chart error:', configureResult.error);
+      // Use the unified chart system for validation and data processing
+      const validationResult = validateCsvForChart(chartType as ChartType, csvData, chartConfig as ChartConfig);
+      if (!validationResult.valid) {
         return {
-          error: configureResult.error,
+          error: `CSV validation failed: Missing columns: ${validationResult.missingColumns.join(', ')}. Available columns: ${validationResult.availableColumns.join(', ')}`,
           chart: null,
         };
       }
 
-      console.log('=== Unified Chart Creation Success ===');
-      console.log('Chart ID:', configureResult.chartId);
-      console.log('Chart created with comprehensive configuration system');
-      console.log('======================================');
+      // Process data using the unified chart system
+      const processedData = processChartData(chartType as ChartType, csvData, chartConfig as ChartConfig);
+      if (!processedData || processedData.length === 0) {
+        return {
+          error: 'No valid data could be processed for this chart type',
+          chart: null,
+        };
+      }
+
+      // Create chart object with unified system processed data
+      const chart = {
+        id: `chart-${chartType}-${Date.now()}`,
+        type: chartType,
+        title,
+        description: chartConfig.description,
+        config: chartConfig,
+        data: processedData,
+        csvData
+      };
 
       return {
-        chart: configureResult.chart,
-        chartId: configureResult.chartId,
-        message: `${configureResult.message} (Created via unified chart system)`,
-        dataMapping: configureResult.chartConfig?.dataMapping,
-        availableColumns: configureResult.availableColumns,
-        appliedOptimizations: configureResult.appliedOptimizations,
-        suggestedNextAction: `Chart created with comprehensive configuration. Use captureChartScreenshot tool to take a visual screenshot and analyze how to improve the chart if needed.`
+        chart,
+        chartId: chart.id,
+        message: `📊 **${chartType.toUpperCase()} CHART CREATED** ⚡ POWERED BY UNIFIED CHART SYSTEM - Fully validated and optimized\n\n**Chart Title**: ${title}\n**Data Points**: ${processedData.length}\n**Available Columns**: ${csvHeaders.join(', ')}\n\nChart ready for rendering!`,
+        dataMapping: chartConfig.dataMapping,
+        availableColumns: csvHeaders,
+        appliedOptimizations: [`Validated with ${validationResult.availableColumns.length} columns`, `Processed ${processedData.length} data points`],
+        suggestedNextAction: `Chart created successfully using the unified chart system. The chart is ready to be rendered inline.`
       };
       
     } catch (error) {
-      console.log('=== Unified Chart Creation Error ===');
-      console.log('Error details:', error);
-      console.log('File URL:', fileUrl);
-      console.log('Chart type:', chartType);
-      console.log('===================================');
       
       if (error instanceof Error) {
         if (error.name === 'AbortError') {

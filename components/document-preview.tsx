@@ -21,7 +21,6 @@ import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
 import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
-import { ChartEditor } from './chart-editor';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -330,18 +329,6 @@ const DocumentContent = ({ document }: { document: Document }) => {
           status={artifact.status}
           isInline={true}
         />
-      ) : document.kind === 'chart' ? (
-        <div className="flex flex-1 relative size-full p-4">
-          <div className="absolute inset-0">
-            <ChartEditor
-              content={document.content ?? ''}
-              isCurrentVersion={true}
-              currentVersionIndex={0}
-              status={artifact.status}
-              saveContent={() => {}}
-            />
-          </div>
-        </div>
       ) : null}
     </div>
   );

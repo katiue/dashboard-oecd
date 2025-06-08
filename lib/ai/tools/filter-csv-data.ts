@@ -72,16 +72,6 @@ export const filterCsvData = tool({
         };
       }
 
-      // Check CSV data size limit (1MB)
-      if (csvData.length > 1024 * 1024) {
-        return {
-          error: 'CSV data is too large. Maximum size is 1MB.',
-          filteredData: [],
-          matchCount: 0,
-          sampleCount: 0,
-        };
-      }
-
       const { headers, data } = parseCSV(csvData);
 
       if (data.length === 0) {

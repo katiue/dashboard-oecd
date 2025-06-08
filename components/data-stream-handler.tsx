@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { artifactDefinitions, ArtifactKind } from './artifact';
 import { Suggestion } from '@/lib/db/schema';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
+import { useDashboard } from '@/hooks/use-dashboard';
 
 export type DataStreamDelta = {
   type:
@@ -18,13 +19,16 @@ export type DataStreamDelta = {
     | 'suggestion'
     | 'clear'
     | 'finish'
-    | 'kind';
-  content: string | Suggestion;
+    | 'kind'
+    | 'dashboard-chart'
+    | 'create-dashboard-chart';
+  content: string | Suggestion | any;
 };
 
 export function DataStreamHandler({ id }: { id: string }) {
   const { data: dataStream } = useChat({ id });
   const { artifact, setArtifact, setMetadata } = useArtifact();
+  const { addChartToDashboard } = useDashboard();
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
@@ -34,6 +38,15 @@ export function DataStreamHandler({ id }: { id: string }) {
     lastProcessedIndex.current = dataStream.length - 1;
 
     (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
+      // Handle dashboard-chart events
+      if (delta.type === 'dashboard-chart' && delta.content) {
+        const { chart, csvData, action } = delta.content;
+        if (action === 'add' && chart) {
+          addChartToDashboard(chart, csvData);
+        }
+        return;
+      }
+
       const artifactDefinition = artifactDefinitions.find(
         (artifactDefinition) => artifactDefinition.kind === artifact.kind,
       );
@@ -91,7 +104,7 @@ export function DataStreamHandler({ id }: { id: string }) {
         }
       });
     });
-  }, [dataStream, setArtifact, setMetadata, artifact]);
+  }, [dataStream, setArtifact, setMetadata, artifact, addChartToDashboard]);
 
   return null;
 }

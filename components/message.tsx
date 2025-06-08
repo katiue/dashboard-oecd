@@ -401,7 +401,7 @@ const PurePreviewMessage = ({
                             </div>
                           ) : result.chart ? (
                             <InlineChart
-                              chartType={result.chart.chartType}
+                              chartType={result.chart.type}
                               title={result.chart.title}
                               description={result.chart.description}
                               data={result.chart.data}
@@ -443,7 +443,7 @@ const PurePreviewMessage = ({
                             </div>
                           ) : result.chart ? (
                             <InlineChart
-                              chartType={result.chart.chartType}
+                              chartType={result.chart.type}
                               title={result.chart.title}
                               description={result.chart.description}
                               data={result.chart.data}
@@ -471,6 +471,78 @@ const PurePreviewMessage = ({
                               <pre className="text-xs overflow-auto max-h-32">
                                 {result.content?.substring(0, 500)}...
                               </pre>
+                            </div>
+                          )}
+                        </div>
+                      ) : toolName === 'createDashboard' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Dashboard Created
+                            </span>
+                          </div>
+                          {result.error ? (
+                            <div className="text-red-500 text-sm">
+                              {result.error}
+                            </div>
+                          ) : result.dashboard ? (
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                ✅ Dashboard created with {result.dashboard.charts?.length || 6} charts
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Charts: {result.dashboard.charts?.map((chart: any) => chart.type).join(', ') || 'bar, line, pie, scatter, radar, heatmap'}
+                              </div>
+                              {result.message && (
+                                <div className="text-xs text-green-700 mt-2">
+                                  {result.message}
+                                </div>
+                              )}
+                              {result.summary && (
+                                <div className="text-xs text-muted-foreground">
+                                  Data: {result.summary.dataRows} rows, {result.summary.dataColumns} columns
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">
+                              Dashboard creation in progress...
+                            </div>
+                          )}
+                        </div>
+                      ) : toolName === 'updateDashboard' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">
+                              Dashboard Updated
+                            </span>
+                          </div>
+                          {result.error ? (
+                            <div className="text-red-500 text-sm">
+                              {result.error}
+                            </div>
+                          ) : result.dashboard ? (
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                ✅ Dashboard updated successfully
+                              </div>
+                              {result.updateSummary && (
+                                <div className="text-xs text-muted-foreground">
+                                  Update type: {result.updateSummary.updateType} | 
+                                  Charts modified: {result.updateSummary.chartsModified}
+                                  {result.updateSummary.newDataSource && ' | New data source'}
+                                  {result.updateSummary.colorSchemeChanged && ' | Color scheme changed'}
+                                </div>
+                              )}
+                              {result.message && (
+                                <div className="text-xs text-green-700 mt-2">
+                                  {result.message}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">
+                              Dashboard update in progress...
                             </div>
                           )}
                         </div>
