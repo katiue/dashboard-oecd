@@ -1,5 +1,5 @@
 import React from 'react';
-import { CalendarChartConfig } from './CalendarSchema';
+import type { CalendarChartConfig } from './CalendarSchema';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -76,7 +76,7 @@ export function CalendarConfig({ config, onChange }: CalendarConfigProps) {
                 id="width"
                 type="number"
                 value={config.width}
-                onChange={(e) => onChange({ width: parseInt(e.target.value) || 800 })}
+                onChange={(e) => onChange({ width: Number.parseInt(e.target.value) || 800 })}
                 min="200"
                 max="2000"
               />
@@ -87,7 +87,7 @@ export function CalendarConfig({ config, onChange }: CalendarConfigProps) {
                 id="height"
                 type="number"
                 value={config.height}
-                onChange={(e) => onChange({ height: parseInt(e.target.value) || 600 })}
+                onChange={(e) => onChange({ height: Number.parseInt(e.target.value) || 600 })}
                 min="200"
                 max="1500"
               />
@@ -190,7 +190,7 @@ export function CalendarConfig({ config, onChange }: CalendarConfigProps) {
                 type="number"
                 value={config.minValue === 'auto' ? '' : config.minValue}
                 onChange={(e) => onChange({ 
-                  minValue: e.target.value === '' ? 'auto' : parseFloat(e.target.value) 
+                  minValue: e.target.value === '' ? 'auto' : Number.parseFloat(e.target.value) 
                 })}
                 placeholder="auto"
               />
@@ -202,7 +202,7 @@ export function CalendarConfig({ config, onChange }: CalendarConfigProps) {
                 type="number"
                 value={config.maxValue === 'auto' ? '' : config.maxValue}
                 onChange={(e) => onChange({ 
-                  maxValue: e.target.value === '' ? 'auto' : parseFloat(e.target.value) 
+                  maxValue: e.target.value === '' ? 'auto' : Number.parseFloat(e.target.value) 
                 })}
                 placeholder="auto"
               />

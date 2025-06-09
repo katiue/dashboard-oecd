@@ -22,8 +22,8 @@ function parseCSV(csvText: string): { headers: string[], data: Record<string, an
     const row: Record<string, any> = {};
     headers.forEach((header, index) => {
       const value = values[index] || '';
-      const numValue = parseFloat(value);
-      row[header] = isNaN(numValue) ? value : numValue;
+      const numValue = Number.parseFloat(value);
+      row[header] = Number.isNaN(numValue) ? value : numValue;
     });
     return row;
   });

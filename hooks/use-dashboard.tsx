@@ -51,7 +51,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             Object.keys(item).forEach(key => {
               const value = item[key];
               if (typeof value === 'number') {
-                cleanedItem[key] = isFinite(value) ? value : 0;
+                cleanedItem[key] = Number.isFinite(value) ? value : 0;
               } else if (typeof value === 'string') {
                 cleanedItem[key] = value.trim() || 'Unknown';
               } else {

@@ -240,8 +240,8 @@ export async function POST(request: Request) {
         console.log('🔍 Provider type:', provider.constructor.name);
         console.log('🔍 Selected model:', selectedChatModel);
         console.log('🔍 CSV files detected:', conversationCsvFiles.length);
-        console.log('🔍 Last message content preview:', transformedMessages[transformedMessages.length - 1]?.content?.slice(0, 200) + '...');
-        console.log('🔍 System prompt preview:', systemPromptContent.slice(0, 300) + '...');
+        console.log('🔍 Last message content preview:', `${transformedMessages[transformedMessages.length - 1]?.content?.slice(0, 200)}...`);
+        console.log('🔍 System prompt preview:', `${systemPromptContent.slice(0, 300)}...`);
         
         const result = streamText({
           model: provider.languageModel(selectedChatModel),
@@ -335,7 +335,7 @@ export async function POST(request: Request) {
               console.log('🔧 Tool results in this step:', toolResults.map(tr => ({
                 toolCallId: tr.toolCallId,
                 resultType: typeof tr.result,
-                resultPreview: typeof tr.result === 'string' ? tr.result.slice(0, 100) + '...' : JSON.stringify(tr.result).slice(0, 100) + '...'
+                resultPreview: typeof tr.result === 'string' ? `${tr.result.slice(0, 100)}...` : `${JSON.stringify(tr.result).slice(0, 100)}...`
               })));
             }
           },

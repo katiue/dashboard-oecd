@@ -27,7 +27,7 @@ export const PreviewAttachment = ({
             />
           ) : contentType === 'text/csv' || contentType === 'application/vnd.ms-excel' ? (
             <div className="flex items-center justify-center h-full">
-              <FileSpreadsheet className="h-8 w-8 text-green-600" />
+              <FileSpreadsheet className="size-8 text-green-600" />
             </div>
           ) : (
             <div className="" />

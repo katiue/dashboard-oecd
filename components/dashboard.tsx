@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useWindowSize } from 'usehooks-ts';
 import { CrossIcon } from './icons';
@@ -52,7 +52,7 @@ function Dashboard({ isVisible, csvData, dashboardData, boundingBox, onClose }: 
     }
     
     // If csvData is actual CSV content, use it
-    if (csvData && csvData.includes(',') && csvData.includes('\n')) {
+    if (csvData?.includes(',') && csvData.includes('\n')) {
       return csvData;
     }
     
@@ -184,10 +184,10 @@ function Dashboard({ isVisible, csvData, dashboardData, boundingBox, onClose }: 
                   csvData={displayData}
                   initialCharts={charts}
                 />
-              ) : csvData && csvData.startsWith('http') ? (
+              ) : csvData?.startsWith('http') ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center space-y-2">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
+                    <div className="animate-spin rounded-full size-8 border-b-2 border-foreground mx-auto" />
                     <div className="text-sm text-muted-foreground">
                       Creating dashboard from your data...
                     </div>

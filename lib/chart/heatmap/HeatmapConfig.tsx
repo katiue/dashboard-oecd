@@ -43,7 +43,7 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
               max="1"
               step="0.1"
               value={config.cellOpacity || 1}
-              onChange={(e) => onChange({ cellOpacity: parseFloat(e.target.value) })}
+              onChange={(e) => onChange({ cellOpacity: Number.parseFloat(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -54,7 +54,7 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
               min="0"
               max="10"
               value={config.cellBorderWidth || 0}
-              onChange={(e) => onChange({ cellBorderWidth: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ cellBorderWidth: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>

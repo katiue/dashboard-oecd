@@ -1,5 +1,5 @@
 // Scatter Chart Schema Definition
-import { BaseChartConfig, AxisConfig, LegendConfig } from '../shared/BaseSchemas';
+import type { BaseChartConfig, AxisConfig, LegendConfig } from '../shared/BaseSchemas';
 
 export interface ScatterPlotConfig extends BaseChartConfig {
   chartType: 'scatter';

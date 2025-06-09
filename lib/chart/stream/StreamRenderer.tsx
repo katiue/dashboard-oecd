@@ -15,7 +15,7 @@ export const StreamRenderer: React.FC<StreamRendererProps> = ({
 }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+      <div className="flex size-full items-center justify-center text-muted-foreground">
         No data available for stream chart
       </div>
     );
@@ -23,12 +23,12 @@ export const StreamRenderer: React.FC<StreamRendererProps> = ({
 
   // Extract keys from data for stream chart
   const keys = config.dataMapping.valueColumns.filter(col => 
-    data.some(item => item[col] !== undefined && isFinite(item[col]))
+    data.some(item => item[col] !== undefined && Number.isFinite(item[col]))
   );
 
   if (keys.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+      <div className="flex size-full items-center justify-center text-muted-foreground">
         No valid value columns found for stream chart
       </div>
     );

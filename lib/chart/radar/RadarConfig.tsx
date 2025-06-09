@@ -14,8 +14,9 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
       {/* Basic Properties */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">Max Value</label>
+          <label htmlFor="radar-max-value" className="text-sm font-medium">Max Value</label>
           <input
+            id="radar-max-value"
             type="text"
             className="w-full mt-1 p-2 border rounded"
             placeholder="auto"
@@ -26,8 +27,9 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
           />
         </div>
         <div>
-          <label className="text-sm font-medium">Curve Type</label>
+          <label htmlFor="radar-curve-type" className="text-sm font-medium">Curve Type</label>
           <select
+            id="radar-curve-type"
             className="w-full mt-1 p-2 border rounded"
             value={config.curve || 'linearClosed'}
             onChange={(e) => onChange({ curve: e.target.value as any })}
@@ -45,19 +47,21 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
         <h5 className="font-medium mb-2">Grid</h5>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="text-sm">Grid Levels ({config.gridLevels || 5})</label>
+            <label htmlFor="radar-grid-levels" className="text-sm">Grid Levels ({config.gridLevels || 5})</label>
             <input
+              id="radar-grid-levels"
               type="range"
               min="3"
               max="8"
               value={config.gridLevels || 5}
-              onChange={(e) => onChange({ gridLevels: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ gridLevels: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
           <div>
-            <label className="text-sm">Grid Shape</label>
+            <label htmlFor="radar-grid-shape" className="text-sm">Grid Shape</label>
             <select
+              id="radar-grid-shape"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.gridShape || 'circular'}
               onChange={(e) => onChange({ gridShape: e.target.value as 'circular' | 'linear' })}
@@ -67,13 +71,14 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
             </select>
           </div>
           <div>
-            <label className="text-sm">Label Offset ({config.gridLabelOffset || 16})</label>
+            <label htmlFor="radar-grid-label-offset" className="text-sm">Label Offset ({config.gridLabelOffset || 16})</label>
             <input
+              id="radar-grid-label-offset"
               type="range"
               min="6"
               max="60"
               value={config.gridLabelOffset || 16}
-              onChange={(e) => onChange({ gridLabelOffset: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ gridLabelOffset: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -86,36 +91,40 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center space-x-2">
             <input
+              id="radar-enable-dots"
               type="checkbox"
               checked={config.enableDots !== false}
               onChange={(e) => onChange({ enableDots: e.target.checked })}
             />
-            <label className="text-sm">Enable Dots</label>
+            <label htmlFor="radar-enable-dots" className="text-sm">Enable Dots</label>
           </div>
           <div className="flex items-center space-x-2">
             <input
+              id="radar-enable-dot-label"
               type="checkbox"
               checked={config.enableDotLabel || false}
               onChange={(e) => onChange({ enableDotLabel: e.target.checked })}
             />
-            <label className="text-sm">Enable Dot Labels</label>
+            <label htmlFor="radar-enable-dot-label" className="text-sm">Enable Dot Labels</label>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-2 mt-2">
           <div>
-            <label className="text-sm">Size ({config.dotSize || 6})</label>
+            <label htmlFor="radar-dot-size" className="text-sm">Size ({config.dotSize || 6})</label>
             <input
+              id="radar-dot-size"
               type="range"
               min="4"
               max="32"
               value={config.dotSize || 6}
-              onChange={(e) => onChange({ dotSize: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ dotSize: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
           <div>
-            <label className="text-sm">Color</label>
+            <label htmlFor="radar-dot-color" className="text-sm">Color</label>
             <input
+              id="radar-dot-color"
               type="color"
               className="w-full mt-1 p-1 border rounded"
               value={typeof config.dotColor === 'string' ? config.dotColor : '#ffffff'}
@@ -123,19 +132,21 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
             />
           </div>
           <div>
-            <label className="text-sm">Border Width</label>
+            <label htmlFor="radar-dot-border-width" className="text-sm">Border Width</label>
             <input
+              id="radar-dot-border-width"
               type="range"
               min="0"
               max="10"
               value={config.dotBorderWidth || 2}
-              onChange={(e) => onChange({ dotBorderWidth: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ dotBorderWidth: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
           <div>
-            <label className="text-sm">Border Color</label>
+            <label htmlFor="radar-dot-border-color" className="text-sm">Border Color</label>
             <input
+              id="radar-dot-border-color"
               type="color"
               className="w-full mt-1 p-1 border rounded"
               value={typeof config.dotBorderColor === 'string' ? config.dotBorderColor : '#000000'}
@@ -150,20 +161,22 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
         <h5 className="font-medium mb-2">Fill & Blend</h5>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm">Fill Opacity ({config.fillOpacity || 0.25})</label>
+            <label htmlFor="radar-fill-opacity" className="text-sm">Fill Opacity ({config.fillOpacity || 0.25})</label>
             <input
+              id="radar-fill-opacity"
               type="range"
               min="0"
               max="1"
               step="0.1"
               value={config.fillOpacity || 0.25}
-              onChange={(e) => onChange({ fillOpacity: parseFloat(e.target.value) })}
+              onChange={(e) => onChange({ fillOpacity: Number.parseFloat(e.target.value) })}
               className="w-full"
             />
           </div>
           <div>
-            <label className="text-sm">Blend Mode</label>
+            <label htmlFor="radar-blend-mode" className="text-sm">Blend Mode</label>
             <select
+              id="radar-blend-mode"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.blendMode || 'normal'}
               onChange={(e) => onChange({ blendMode: e.target.value as any })}
@@ -184,6 +197,7 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
         <h5 className="font-medium mb-2">Legends</h5>
         <div className="flex items-center space-x-2">
           <input
+            id="radar-enable-legends"
             type="checkbox"
             checked={!!(config.legends && config.legends.length > 0)}
             onChange={(e) => onChange({ 
@@ -198,7 +212,7 @@ export const RadarConfig: React.FC<RadarConfigProps> = ({ config, onChange }) =>
               }] : []
             })}
           />
-          <label className="text-sm">Enable Legends</label>
+          <label htmlFor="radar-enable-legends" className="text-sm">Enable Legends</label>
         </div>
       </div>
     </div>

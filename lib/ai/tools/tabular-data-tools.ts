@@ -11,8 +11,8 @@ function parseCSV(csvText: string): { headers: string[], data: Record<string, an
     const row: Record<string, any> = {};
     headers.forEach((header, index) => {
       const value = values[index] || '';
-      const numValue = parseFloat(value);
-      row[header] = isNaN(numValue) ? value : numValue;
+      const numValue = Number.parseFloat(value);
+      row[header] = Number.isNaN(numValue) ? value : numValue;
     });
     return row;
   });
@@ -163,14 +163,14 @@ export const filterData = tool({
       const filtered = data.filter((row: any) => {
         const cellValue = row[column];
         // Convert value to appropriate type for comparison
-        const numericValue = parseFloat(value);
-        const compareValue = isNaN(numericValue) ? value : numericValue;
+        const numericValue = Number.parseFloat(value);
+        const compareValue = Number.isNaN(numericValue) ? value : numericValue;
         
         switch (operator) {
           case '>': return Number(cellValue) > Number(compareValue);
           case '<': return Number(cellValue) < Number(compareValue);
-          case '==': return cellValue == compareValue;
-          case '!=': return cellValue != compareValue;
+          case '==': return cellValue === compareValue;
+          case '!=': return cellValue !== compareValue;
           default: return true;
         }
       });
@@ -226,7 +226,7 @@ export const aggregateData = tool({
       // Aggregate each group
       const result = Object.entries(groups).map(([key, rows]) => {
         let value: number;
-        const values = rows.map(r => Number((r as any)[valueColumn])).filter(v => !isNaN(v));
+        const values = rows.map(r => Number((r as any)[valueColumn])).filter(v => !Number.isNaN(v));
         
         switch (operation) {
           case 'sum': value = values.reduce((a, b) => a + b, 0); break;
@@ -272,15 +272,16 @@ export const transformData = tool({
         const newRow = { ...row };
         const value = Number(row[column]);
         
-        if (!isNaN(value)) {
+        if (!Number.isNaN(value)) {
           switch (operation) {
-            case 'normalize':
+            case 'normalize': {
               // Simple 0-1 normalization
-              const values = data.map((r: any) => Number(r[column])).filter((v: any) => !isNaN(v));
+              const values = data.map((r: any) => Number(r[column])).filter((v: any) => !Number.isNaN(v));
               const min = Math.min(...values);
               const max = Math.max(...values);
               (newRow as any)[column] = (value - min) / (max - min);
               break;
+            }
             case 'round':
               (newRow as any)[column] = Math.round(value);
               break;
@@ -319,7 +320,7 @@ export const analyzeStats = tool({
   }),
   execute: async ({ data, headers, column }) => {
     try {
-      const values = data.map((row: any) => Number((row as any)[column])).filter((v: number) => !isNaN(v));
+      const values = data.map((row: any) => Number((row as any)[column])).filter((v: number) => !Number.isNaN(v));
       
       if (values.length === 0) {
         return {
@@ -402,13 +403,13 @@ export const calculateStatistics = tool({
     try {
       const analyzeColumns = columns || headers.filter(h => {
         const values = (data as any[]).map((row: any) => row[h]).filter((v: any) => v !== null && v !== undefined);
-        return values.length > 0 && !isNaN(Number(values[0]));
+        return values.length > 0 && !Number.isNaN(Number(values[0]));
       });
       
       const statistics: Record<string, any> = {};
       
               analyzeColumns.forEach(column => {
-          const values = (data as any[]).map((row: any) => Number(row[column])).filter((v: any) => !isNaN(v));
+          const values = (data as any[]).map((row: any) => Number(row[column])).filter((v: any) => !Number.isNaN(v));
         
         if (values.length === 0) {
           statistics[column] = { error: 'No numeric values found' };
@@ -571,7 +572,7 @@ export const groupAndAggregate = tool({
       
       // Calculate statistics for each group
       const results = Object.entries(groups).map(([key, rows]) => {
-        const values = rows.map(r => Number(r[valueColumn])).filter(v => !isNaN(v));
+        const values = rows.map(r => Number(r[valueColumn])).filter(v => !Number.isNaN(v));
         const result: any = { [groupBy]: key };
         
         operations.forEach(op => {
@@ -591,10 +592,11 @@ export const groupAndAggregate = tool({
             case 'max':
               result[`${valueColumn}_max`] = values.length > 0 ? Math.max(...values) : 0;
               break;
-            case 'median':
+            case 'median': {
               const sorted = [...values].sort((a, b) => a - b);
               result[`${valueColumn}_median`] = sorted.length > 0 ? sorted[Math.floor(sorted.length / 2)] : 0;
               break;
+            }
           }
         });
         
@@ -645,7 +647,7 @@ export const sumEntireColumn = tool({
         };
       }
       
-      const values = (data as any[]).map((row: any) => Number(row[column])).filter((v: number) => !isNaN(v));
+      const values = (data as any[]).map((row: any) => Number(row[column])).filter((v: number) => !Number.isNaN(v));
       
       if (values.length === 0) {
         return {
@@ -743,7 +745,7 @@ export const detectAndResolveDuplicates = tool({
           if (header === identifierColumn) return false;
           const values = dataArray.map(row => row[header]).filter(v => v !== null && v !== undefined);
           if (values.length === 0) return false;
-          const numericValues = values.map(v => Number(v)).filter(v => !isNaN(v));
+          const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
           return numericValues.length > values.length * 0.8; // 80% numeric
         });
       }
@@ -768,7 +770,7 @@ export const detectAndResolveDuplicates = tool({
           
           if (columnsToSum.includes(header)) {
             // Sum numeric columns
-            const values = rows.map(r => Number(r[header])).filter(v => !isNaN(v));
+            const values = rows.map(r => Number(r[header])).filter(v => !Number.isNaN(v));
             aggregatedRow[header] = values.reduce((a, b) => a + b, 0);
           } else {
             // Take first non-null value for other columns
@@ -853,7 +855,7 @@ export const loadOECDPatentData = tool({
         'patent_families', 'triadic_patents', 'pct_applications'
       ];
       
-      let qualityIssues: string[] = [];
+      const qualityIssues: string[] = [];
       let processedData = [...data];
       
       // Structure validation
@@ -883,7 +885,7 @@ export const loadOECDPatentData = tool({
         headers.forEach(header => {
           const values = processedData.map(row => row[header]);
           const nonNullValues = values.filter(v => v !== null && v !== undefined && v !== '');
-          const numericValues = nonNullValues.map(v => Number(v)).filter(v => !isNaN(v));
+          const numericValues = nonNullValues.map(v => Number(v)).filter(v => !Number.isNaN(v));
           
           qualityReport[header] = {
             totalValues: values.length,
@@ -1032,8 +1034,8 @@ export const cleanOECDPatentData = tool({
             yearColumns.forEach(col => {
               const yearValue = row[col];
               if (yearValue) {
-                const year = parseInt(String(yearValue));
-                if (!isNaN(year)) {
+                const year = Number.parseInt(String(yearValue));
+                if (!Number.isNaN(year)) {
                   // Valid year range for patent data (1980-2030)
                   if (year >= 1980 && year <= 2030) {
                     newRow[col] = year;
@@ -1071,12 +1073,13 @@ export const cleanOECDPatentData = tool({
                 case 'zero':
                   newRow[col] = 0;
                   break;
-                case 'interpolate':
+                case 'interpolate': {
                   // Simple interpolation based on nearby values
                   const prevValue = index > 0 ? cleanedData[index - 1][col] : 0;
                   const nextValue = index < cleanedData.length - 1 ? cleanedData[index + 1][col] : 0;
                   newRow[col] = Math.round((Number(prevValue) + Number(nextValue)) / 2) || 0;
                   break;
+                }
                 case 'remove':
                   // Will be filtered out later
                   break;
@@ -1084,7 +1087,7 @@ export const cleanOECDPatentData = tool({
             } else {
               // Ensure numeric values
               const numValue = Number(value);
-              newRow[col] = isNaN(numValue) ? 0 : Math.max(0, numValue);
+              newRow[col] = Number.isNaN(numValue) ? 0 : Math.max(0, numValue);
             }
           });
           return newRow;
@@ -1432,14 +1435,14 @@ export const cleanDataForDashboard = ({ dataStream }: TabularToolsProps) => tool
         const before = processedData.length;
         processedData = processedData.filter(row => {
           const cellValue = row[filterColumn];
-          const numericValue = parseFloat(filterValue);
-          const compareValue = isNaN(numericValue) ? filterValue : numericValue;
+          const numericValue = Number.parseFloat(filterValue);
+          const compareValue = Number.isNaN(numericValue) ? filterValue : numericValue;
           
           switch (filterOperator) {
             case '>': return Number(cellValue) > Number(compareValue);
             case '<': return Number(cellValue) < Number(compareValue);
-            case '==': return cellValue == compareValue;
-            case '!=': return cellValue != compareValue;
+            case '==': return cellValue === compareValue;
+            case '!=': return cellValue !== compareValue;
             default: return true;
           }
         });
@@ -1542,7 +1545,7 @@ export const resolveDuplicatesForDashboard = ({ dataStream }: TabularToolsProps)
             if (header === identifierColumn) return false;
             const values = data.map(row => row[header]).filter(v => v !== null && v !== undefined);
             if (values.length === 0) return false;
-            const numericValues = values.map(v => Number(v)).filter(v => !isNaN(v));
+            const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
             return numericValues.length > values.length * 0.8;
           });
         }
@@ -1566,7 +1569,7 @@ export const resolveDuplicatesForDashboard = ({ dataStream }: TabularToolsProps)
             
             if (columnsToSum.includes(header)) {
               // Sum numeric columns
-              const values = rows.map(r => Number(r[header])).filter(v => !isNaN(v));
+              const values = rows.map(r => Number(r[header])).filter(v => !Number.isNaN(v));
               aggregatedRow[header] = values.reduce((a, b) => a + b, 0);
             } else {
               // Take first non-null value
@@ -1706,7 +1709,7 @@ export const processDataForDashboard = ({ dataStream }: TabularToolsProps) => to
             if (header === identifierColumn) return false;
             const values = processedData.map(row => row[header]).filter(v => v !== null && v !== undefined);
             if (values.length === 0) return false;
-            const numericValues = values.map(v => Number(v)).filter(v => !isNaN(v));
+            const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
             return numericValues.length > values.length * 0.8;
           });
           
@@ -1726,7 +1729,7 @@ export const processDataForDashboard = ({ dataStream }: TabularToolsProps) => to
               if (header === identifierColumn) return;
               
               if (numericColumns.includes(header)) {
-                const values = rows.map(r => Number(r[header])).filter(v => !isNaN(v));
+                const values = rows.map(r => Number(r[header])).filter(v => !Number.isNaN(v));
                 aggregatedRow[header] = values.reduce((a, b) => a + b, 0);
               } else {
                 const firstValue = rows.find(r => r[header] !== null && r[header] !== undefined)?.[header];
@@ -1750,14 +1753,14 @@ export const processDataForDashboard = ({ dataStream }: TabularToolsProps) => to
         const before = processedData.length;
         processedData = processedData.filter(row => {
           const cellValue = row[filterColumn];
-          const numericValue = parseFloat(filterValue);
-          const compareValue = isNaN(numericValue) ? filterValue : numericValue;
+          const numericValue = Number.parseFloat(filterValue);
+          const compareValue = Number.isNaN(numericValue) ? filterValue : numericValue;
           
           switch (filterOperator) {
             case '>': return Number(cellValue) > Number(compareValue);
             case '<': return Number(cellValue) < Number(compareValue);
-            case '==': return cellValue == compareValue;
-            case '!=': return cellValue != compareValue;
+            case '==': return cellValue === compareValue;
+            case '!=': return cellValue !== compareValue;
             default: return true;
           }
         });
@@ -1798,12 +1801,12 @@ export const processDataForDashboard = ({ dataStream }: TabularToolsProps) => to
         totalColumns: headers.length,
         numericColumns: headers.filter(h => {
           const values = processedData.map(row => row[h]);
-          const numericValues = values.map(v => Number(v)).filter(v => !isNaN(v));
+          const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
           return numericValues.length > values.length * 0.8;
         }),
         textColumns: headers.filter(h => {
           const values = processedData.map(row => row[h]);
-          const textValues = values.filter(v => typeof v === 'string' || isNaN(Number(v)));
+          const textValues = values.filter(v => typeof v === 'string' || Number.isNaN(Number(v)));
           return textValues.length > values.length * 0.8;
         })
       };

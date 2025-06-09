@@ -275,7 +275,7 @@ const ChartConfigSchema = z.discriminatedUnion('chartType', [
 function applyScreenshotRecommendations(config: any, analysis: { recommendations?: string[]; configurationSuggestions?: any }) {
   if (!analysis.recommendations && !analysis.configurationSuggestions) return config;
   
-  let optimizedConfig = { ...config };
+  const optimizedConfig = { ...config };
   
   // Apply specific configuration suggestions if available
   if (analysis.configurationSuggestions) {
@@ -348,7 +348,7 @@ function applyScreenshotRecommendations(config: any, analysis: { recommendations
 
 // Generate UUID for chart identification
 function generateUUID(): string {
-  return 'chart-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return `chart-${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
 }
 
 // Simple CSV parser function

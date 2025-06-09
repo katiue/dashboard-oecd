@@ -39,7 +39,7 @@ export const LineConfig: React.FC<LineConfigProps> = ({ config, onChange }) => {
             min="1"
             max="10"
             value={config.lineWidth || 2}
-            onChange={(e) => onChange({ lineWidth: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ lineWidth: Number.parseInt(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -74,7 +74,7 @@ export const LineConfig: React.FC<LineConfigProps> = ({ config, onChange }) => {
               min="4"
               max="20"
               value={config.pointSize || 8}
-              onChange={(e) => onChange({ pointSize: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ pointSize: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -85,7 +85,7 @@ export const LineConfig: React.FC<LineConfigProps> = ({ config, onChange }) => {
               min="0"
               max="10"
               value={config.pointBorderWidth || 2}
-              onChange={(e) => onChange({ pointBorderWidth: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ pointBorderWidth: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -112,7 +112,7 @@ export const LineConfig: React.FC<LineConfigProps> = ({ config, onChange }) => {
               max="1"
               step="0.1"
               value={config.areaOpacity || 0.2}
-              onChange={(e) => onChange({ areaOpacity: parseFloat(e.target.value) })}
+              onChange={(e) => onChange({ areaOpacity: Number.parseFloat(e.target.value) })}
               className="w-full"
             />
           </div>

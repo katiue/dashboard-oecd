@@ -1,7 +1,7 @@
 // Scatter Plot Renderer
 import React from 'react';
 import { ResponsiveScatterPlot } from '@nivo/scatterplot';
-import { ScatterPlotConfig } from './ScatterSchema';
+import type { ScatterPlotConfig } from './ScatterSchema';
 
 interface ScatterRendererProps {
   data: any[];
@@ -22,15 +22,17 @@ export const ScatterRenderer: React.FC<ScatterRendererProps> = ({
     series.data.every((point: any) => 
       point && 
       typeof point.x === 'number' && 
+      Number.
       isFinite(point.x) &&
       typeof point.y === 'number' && 
+      Number.
       isFinite(point.y)
     )
   );
   
   if (validScatterData.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex size-full items-center justify-center">
         <p className="text-muted-foreground">Scatter plot requires valid x,y coordinate data</p>
       </div>
     );

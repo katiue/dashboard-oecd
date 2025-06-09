@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { BaseChartConfig } from '../shared/BaseSchemas';
 
 // Calendar-specific data mapping schema
 export const CalendarDataMappingSchema = z.object({

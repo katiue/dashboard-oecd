@@ -52,7 +52,7 @@ export function extractCsvFiles(messages: any[], previousMessages: any[], curren
  */
 export function transformMessagesForAgent(messages: any[], csvFiles: CsvFile[]): any[] {
   const transformedMessages = messages.map((msg, msgIndex) => {
-    let transformedMsg = { ...msg };
+    const transformedMsg = { ...msg };
     
     // Only add CSV context to the CURRENT (last) message to avoid confusion
     if (csvFiles.length > 0 && msgIndex === messages.length - 1) {

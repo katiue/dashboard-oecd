@@ -21,14 +21,14 @@ function parseCSV(csvText: string): { headers: string[], data: Record<string, st
 // Helper function to convert string values to numbers
 function toNumber(value: string | number): number {
   if (typeof value === 'number') {
-    return isFinite(value) && !isNaN(value) ? value : 0;
+    return Number.isFinite(value) && !Number.isNaN(value) ? value : 0;
   }
   const cleaned = String(value).trim();
   if (cleaned === '' || cleaned === 'null' || cleaned === 'undefined') {
     return 0;
   }
   const num = Number.parseFloat(cleaned);
-  return isFinite(num) && !isNaN(num) ? num : 0;
+  return Number.isFinite(num) && !Number.isNaN(num) ? num : 0;
 }
 
 // Helper function to clean string values
@@ -54,7 +54,7 @@ export function processLineData(csvData: string, config: LineChartConfig): any[]
       data: data.map(row => ({
         x: cleanString(row[xColumn]) || 'unknown',
         y: toNumber(row[yCol])
-      })).filter(point => point.x !== 'unknown' && isFinite(point.y))
+      })).filter(point => point.x !== 'unknown' && Number.isFinite(point.y))
     }))
     .filter(series => series.data.length > 0);
 }

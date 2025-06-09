@@ -1,79 +1,34 @@
 // Unified Chart Data Processor
 // Centralizes all chart data processing functionality
 
-import { processBarData } from './bar/BarDataProcessor';
-import { processLineData } from './line/LineDataProcessor';
-import { processPieData } from './pie/PieDataProcessor';
-import { processHeatmapData } from './heatmap/HeatmapDataProcessor';
-import { processRadarData } from './radar/RadarDataProcessor';
-import { processScatterData } from './scatter/ScatterDataProcessor';
-import { processAreaBumpData } from './areaBump/AreaBumpDataProcessor';
-import { processCalendarData } from './calendar/CalendarDataProcessor';
-import { processChordData } from './chord/ChordDataProcessor';
-import { processCirclePackingData } from './circlePacking/CirclePackingDataProcessor';
-import { processSankeyData } from './sankey/SankeyDataProcessor';
-import { processBoxPlotData } from './boxplot/BoxPlotDataProcessor';
-import { processBumpData } from './bump/BumpDataProcessor';
-import { processBulletData } from './bullet/BulletDataProcessor';
-import { processFunnelData } from './funnel/FunnelDataProcessor';
-import { processStreamData } from './stream/StreamDataProcessor';
-import { processSunburstData } from './sunburst/SunburstDataProcessor';
-import { processWaffleData } from './waffle/WaffleDataProcessor';
-import { processNetworkData } from './network/NetworkDataProcessor';
-import { processRadialBarData } from './radialbar/RadialBarDataProcessor';
-import { processSwarmplotData } from './swarmplot/SwarmplotDataProcessor';
-import { processTreemapData } from './treemap/TreemapDataProcessor';
-import { processVoronoiData } from './voronoi/VoronoiDataProcessor';
+import { processBarData, validateCsvForBar, getRequiredColumns as getBarRequiredColumns } from './bar/BarDataProcessor';
+import { processLineData, validateCsvForLine, getRequiredColumns as getLineRequiredColumns } from './line/LineDataProcessor';
+import { processPieData, validateCsvForPie, getRequiredColumns as getPieRequiredColumns } from './pie/PieDataProcessor';
+import { processHeatmapData, validateCsvForHeatmap, getRequiredColumns as getHeatmapRequiredColumns } from './heatmap/HeatmapDataProcessor';
+import { processRadarData, validateCsvForRadar, getRequiredColumns as getRadarRequiredColumns } from './radar/RadarDataProcessor';
+import { processScatterData, validateCsvForScatter, getRequiredColumns as getScatterRequiredColumns } from './scatter/ScatterDataProcessor';
+import { processAreaBumpData, validateCsvForAreaBump, getRequiredColumns as getAreaBumpRequiredColumns } from './areaBump/AreaBumpDataProcessor';
+import { processCalendarData, validateCsvForCalendar } from './calendar/CalendarDataProcessor';
+import { processChordData, validateCsvForChord, getRequiredColumns as getChordRequiredColumns } from './chord/ChordDataProcessor';
+import { processCirclePackingData, validateCsvForCirclePacking, getRequiredColumns as getCirclePackingRequiredColumns } from './circlePacking/CirclePackingDataProcessor';
+import { processSankeyData, validateCsvForSankey, getRequiredColumns as getSankeyRequiredColumns } from './sankey/SankeyDataProcessor';
+import { processBoxPlotData, validateCsvForBoxPlot, getRequiredColumns as getBoxPlotRequiredColumns } from './boxplot/BoxPlotDataProcessor';
+import { processBumpData, validateCsvForBump, getRequiredColumns as getBumpRequiredColumns } from './bump/BumpDataProcessor';
+import { processBulletData, validateCsvForBullet, getRequiredColumns as getBulletRequiredColumns } from './bullet/BulletDataProcessor';
+import { processFunnelData, validateCsvForFunnel, getRequiredColumns as getFunnelRequiredColumns } from './funnel/FunnelDataProcessor';
+import { processStreamData, validateCsvForStream, getRequiredColumns as getStreamRequiredColumns } from './stream/StreamDataProcessor';
+import { processSunburstData, validateCsvForSunburst, getRequiredColumns as getSunburstRequiredColumns } from './sunburst/SunburstDataProcessor';
+import { processWaffleData, validateCsvForWaffle, getRequiredColumns as getWaffleRequiredColumns } from './waffle/WaffleDataProcessor';
+import { processNetworkData, validateCsvForNetwork, getRequiredColumns as getNetworkRequiredColumns } from './network/NetworkDataProcessor';
+import { processRadialBarData, validateCsvForRadialBar, getRequiredColumns as getRadialBarRequiredColumns } from './radialbar/RadialBarDataProcessor';
+import { processSwarmplotData, validateCsvForSwarmplot, getRequiredColumns as getSwarmplotRequiredColumns } from './swarmplot/SwarmplotDataProcessor';
+import { processTreemapData, validateCsvForTreemap, getRequiredColumns as getTreemapRequiredColumns } from './treemap/TreemapDataProcessor';
+import { processVoronoiData, validateCsvForVoronoi, getRequiredColumns as getVoronoiRequiredColumns } from './voronoi/VoronoiDataProcessor';
 
 // Import validation functions
-import { validateCsvForBar } from './bar/BarDataProcessor';
-import { validateCsvForLine } from './line/LineDataProcessor';
-import { validateCsvForPie } from './pie/PieDataProcessor';
-import { validateCsvForHeatmap } from './heatmap/HeatmapDataProcessor';
-import { validateCsvForRadar } from './radar/RadarDataProcessor';
-import { validateCsvForScatter } from './scatter/ScatterDataProcessor';
-import { validateCsvForAreaBump } from './areaBump/AreaBumpDataProcessor';
-import { validateCsvForCalendar } from './calendar/CalendarDataProcessor';
-import { validateCsvForChord } from './chord/ChordDataProcessor';
-import { validateCsvForCirclePacking } from './circlePacking/CirclePackingDataProcessor';
-import { validateCsvForSankey } from './sankey/SankeyDataProcessor';
-import { validateCsvForBoxPlot } from './boxplot/BoxPlotDataProcessor';
-import { validateCsvForBump } from './bump/BumpDataProcessor';
-import { validateCsvForBullet } from './bullet/BulletDataProcessor';
-import { validateCsvForFunnel } from './funnel/FunnelDataProcessor';
-import { validateCsvForStream } from './stream/StreamDataProcessor';
-import { validateCsvForSunburst } from './sunburst/SunburstDataProcessor';
-import { validateCsvForWaffle } from './waffle/WaffleDataProcessor';
-import { validateCsvForNetwork } from './network/NetworkDataProcessor';
-import { validateCsvForRadialBar } from './radialbar/RadialBarDataProcessor';
-import { validateCsvForSwarmplot } from './swarmplot/SwarmplotDataProcessor';
-import { validateCsvForTreemap } from './treemap/TreemapDataProcessor';
-import { validateCsvForVoronoi } from './voronoi/VoronoiDataProcessor';
 
 // Import required columns functions
-import { getRequiredColumns as getBarRequiredColumns } from './bar/BarDataProcessor';
-import { getRequiredColumns as getLineRequiredColumns } from './line/LineDataProcessor';
-import { getRequiredColumns as getPieRequiredColumns } from './pie/PieDataProcessor';
-import { getRequiredColumns as getHeatmapRequiredColumns } from './heatmap/HeatmapDataProcessor';
-import { getRequiredColumns as getRadarRequiredColumns } from './radar/RadarDataProcessor';
-import { getRequiredColumns as getScatterRequiredColumns } from './scatter/ScatterDataProcessor';
-import { getRequiredColumns as getAreaBumpRequiredColumns } from './areaBump/AreaBumpDataProcessor';
 // Calendar doesn't need getRequiredColumns import as it's simple
-import { getRequiredColumns as getChordRequiredColumns } from './chord/ChordDataProcessor';
-import { getRequiredColumns as getCirclePackingRequiredColumns } from './circlePacking/CirclePackingDataProcessor';
-import { getRequiredColumns as getSankeyRequiredColumns } from './sankey/SankeyDataProcessor';
-import { getRequiredColumns as getBoxPlotRequiredColumns } from './boxplot/BoxPlotDataProcessor';
-import { getRequiredColumns as getBumpRequiredColumns } from './bump/BumpDataProcessor';
-import { getRequiredColumns as getBulletRequiredColumns } from './bullet/BulletDataProcessor';
-import { getRequiredColumns as getFunnelRequiredColumns } from './funnel/FunnelDataProcessor';
-import { getRequiredColumns as getStreamRequiredColumns } from './stream/StreamDataProcessor';
-import { getRequiredColumns as getSunburstRequiredColumns } from './sunburst/SunburstDataProcessor';
-import { getRequiredColumns as getWaffleRequiredColumns } from './waffle/WaffleDataProcessor';
-import { getRequiredColumns as getNetworkRequiredColumns } from './network/NetworkDataProcessor';
-import { getRequiredColumns as getRadialBarRequiredColumns } from './radialbar/RadialBarDataProcessor';
-import { getRequiredColumns as getSwarmplotRequiredColumns } from './swarmplot/SwarmplotDataProcessor';
-import { getRequiredColumns as getTreemapRequiredColumns } from './treemap/TreemapDataProcessor';
-import { getRequiredColumns as getVoronoiRequiredColumns } from './voronoi/VoronoiDataProcessor';
 
 import type { ChartType, ChartConfig } from './UnifiedChartRenderer';
 

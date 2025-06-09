@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import { CalendarChartConfig } from './CalendarSchema';
+import type { CalendarChartConfig } from './CalendarSchema';
 
 export interface CalendarDataPoint {
   day: string; // Date in YYYY-MM-DD format
@@ -42,7 +42,7 @@ export function processCalendarData(csvData: string, config: CalendarChartConfig
           let formattedDate: string;
           const date = new Date(dateValue);
           
-          if (isNaN(date.getTime())) {
+          if (Number.isNaN(date.getTime())) {
             console.warn(`Invalid date at row ${index + 1}: ${dateValue}`);
             return null;
           }
@@ -51,9 +51,9 @@ export function processCalendarData(csvData: string, config: CalendarChartConfig
           formattedDate = date.toISOString().split('T')[0];
 
           // Parse value
-          const numericValue = typeof value === 'number' ? value : parseFloat(value);
+          const numericValue = typeof value === 'number' ? value : Number.parseFloat(value);
           
-          if (isNaN(numericValue)) {
+          if (Number.isNaN(numericValue)) {
             console.warn(`Invalid value at row ${index + 1}: ${value}`);
             return null;
           }
@@ -131,15 +131,15 @@ export function validateCalendarData(csvData: string, config: CalendarChartConfi
       // Check date validity
       if (dateValue) {
         const date = new Date(dateValue);
-        if (isNaN(date.getTime())) {
+        if (Number.isNaN(date.getTime())) {
           invalidDates++;
         }
       }
 
       // Check value validity
       if (value !== undefined && value !== null && value !== '') {
-        const numericValue = typeof value === 'number' ? value : parseFloat(value);
-        if (isNaN(numericValue)) {
+        const numericValue = typeof value === 'number' ? value : Number.parseFloat(value);
+        if (Number.isNaN(numericValue)) {
           invalidValues++;
         } else {
           validRows++;

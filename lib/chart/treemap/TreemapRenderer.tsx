@@ -15,7 +15,7 @@ export const TreemapRenderer: React.FC<TreemapRendererProps> = ({
 }) => {
   if (!data || !data.children || data.children.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+      <div className="flex size-full items-center justify-center text-muted-foreground">
         No data available for treemap chart
       </div>
     );

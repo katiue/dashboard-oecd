@@ -1,5 +1,5 @@
-import { pgTable, varchar, text, timestamp, uuid, primaryKey } from 'drizzle-orm/pg-core';
-import { InferSelectModel } from 'drizzle-orm';
+import { pgTable, text, timestamp, uuid, primaryKey } from 'drizzle-orm/pg-core';
+import type { InferSelectModel } from 'drizzle-orm';
 import { user } from './schema';
 
 export const dashboard = pgTable(

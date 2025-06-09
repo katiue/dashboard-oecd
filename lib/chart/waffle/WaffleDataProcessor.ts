@@ -27,7 +27,7 @@ export function processWaffleData(csvData: string, config: WaffleChartConfig): a
   return data.map((row, index) => ({
     id: row[idColumn] || `item-${index}`,
     label: row[idColumn] || `item-${index}`,
-    value: parseFloat(row[valueColumn]) || 0
+    value: Number.parseFloat(row[valueColumn]) || 0
   })).filter(item => item.value > 0);
 }
 

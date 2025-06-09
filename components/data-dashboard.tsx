@@ -1,15 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ChevronDownIcon, DownloadIcon, FullscreenIcon } from '@/components/icons';
+import { FullscreenIcon } from '@/components/icons';
 import { UnifiedChartRenderer, type ChartType, type ChartConfig } from '@/lib/chart/UnifiedChartRenderer';
 import { processChartData } from '@/lib/chart/UnifiedChartDataProcessor';
 import { parse } from 'papaparse';
@@ -116,7 +112,7 @@ export function DataDashboard({ csvData: initialCsvData, initialCharts }: DataDa
           };
         }
 
-        let filteredData = parsedData.data;
+        const filteredData = parsedData.data;
 
         // Clean and validate the data before processing
         const cleanedData = filteredData.map(row => {
@@ -143,7 +139,7 @@ export function DataDashboard({ csvData: initialCsvData, initialCharts }: DataDa
           };
         }
 
-        const headers = parsedData.headers.join(',') + '\n';
+        const headers = `${parsedData.headers.join(',')}\n`;
         const dataRows = cleanedData.map(row => 
           parsedData.headers.map(header => {
             const value = row[header] || '0';
@@ -170,7 +166,7 @@ export function DataDashboard({ csvData: initialCsvData, initialCharts }: DataDa
             const value = item[key];
             if (typeof value === 'number') {
               // Ensure no NaN, Infinity, or invalid numbers
-              cleanedItem[key] = isFinite(value) ? value : 0;
+              cleanedItem[key] = Number.isFinite(value) ? value : 0;
             } else if (typeof value === 'string') {
               // Ensure strings are not empty and properly trimmed
               cleanedItem[key] = value.trim() || 'Unknown';
@@ -325,7 +321,7 @@ export function DataDashboard({ csvData: initialCsvData, initialCharts }: DataDa
                       config={chart.config}
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center border border-dashed rounded">
+                    <div className="flex size-full items-center justify-center border border-dashed rounded">
                       <div className="text-muted-foreground">No data available</div>
                     </div>
                   )}
@@ -412,7 +408,7 @@ function FullScreenChartView({
                     <div className="text-sm space-y-1">
                       {(chart as any).processingSteps.map((step: string, index: number) => (
                         <div key={index} className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                          <span className="w-4 h-4 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">{index + 1}</span>
+                          <span className="size-4 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">{index + 1}</span>
                           {step}
                         </div>
                       ))}
@@ -784,7 +780,7 @@ function BarChartConfig({
             max="0.9"
             step="0.1"
             value={config.padding || 0.3}
-            onChange={(e) => onChange({ padding: parseFloat(e.target.value) })}
+            onChange={(e) => onChange({ padding: Number.parseFloat(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -796,7 +792,7 @@ function BarChartConfig({
             max="10"
             step="1"
             value={config.innerPadding || 0}
-            onChange={(e) => onChange({ innerPadding: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ innerPadding: Number.parseInt(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -915,7 +911,7 @@ function BarChartConfig({
               type="number"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.labelSkipWidth || 0}
-              onChange={(e) => onChange({ labelSkipWidth: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ labelSkipWidth: Number.parseInt(e.target.value) })}
             />
           </div>
           <div>
@@ -924,7 +920,7 @@ function BarChartConfig({
               type="number"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.labelSkipHeight || 0}
-              onChange={(e) => onChange({ labelSkipHeight: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ labelSkipHeight: Number.parseInt(e.target.value) })}
             />
           </div>
           <div>
@@ -1032,7 +1028,7 @@ function LineChartConfig({
             min="1"
             max="10"
             value={config.lineWidth || 2}
-            onChange={(e) => onChange({ lineWidth: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ lineWidth: Number.parseInt(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -1214,7 +1210,7 @@ function LineChartConfig({
               min="4"
               max="20"
               value={config.pointSize || 8}
-              onChange={(e) => onChange({ pointSize: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ pointSize: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -1235,7 +1231,7 @@ function LineChartConfig({
               max="10"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.pointBorderWidth || 0}
-              onChange={(e) => onChange({ pointBorderWidth: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ pointBorderWidth: Number.parseInt(e.target.value) })}
             />
           </div>
           <div>
@@ -1264,7 +1260,7 @@ function LineChartConfig({
               type="number"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.pointLabelYOffset || 0}
-              onChange={(e) => onChange({ pointLabelYOffset: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ pointLabelYOffset: Number.parseInt(e.target.value) })}
             />
           </div>
         </div>
@@ -1290,7 +1286,7 @@ function LineChartConfig({
               max="1"
               step="0.1"
               value={config.areaOpacity || 0.2}
-              onChange={(e) => onChange({ areaOpacity: parseFloat(e.target.value) })}
+              onChange={(e) => onChange({ areaOpacity: Number.parseFloat(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -1407,7 +1403,7 @@ function PieChartConfig({
           max="0.9"
           step="0.1"
           value={config.innerRadius || 0.5}
-          onChange={(e) => onChange({ innerRadius: parseFloat(e.target.value) })}
+          onChange={(e) => onChange({ innerRadius: Number.parseFloat(e.target.value) })}
           className="w-full"
         />
         <div className="text-xs text-muted-foreground">{config.innerRadius || 0.5}</div>
@@ -1439,7 +1435,7 @@ function ScatterChartConfig({
             min="4"
             max="64"
             value={nodeSize}
-            onChange={(e) => onChange({ nodeSize: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ nodeSize: Number.parseInt(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -1726,7 +1722,7 @@ function RadarChartConfig({
               min="3"
               max="8"
               value={config.gridLevels || 5}
-              onChange={(e) => onChange({ gridLevels: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ gridLevels: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -1748,7 +1744,7 @@ function RadarChartConfig({
               min="6"
               max="60"
               value={config.gridLabelOffset || 16}
-              onChange={(e) => onChange({ gridLabelOffset: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ gridLabelOffset: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -1784,7 +1780,7 @@ function RadarChartConfig({
               min="4"
               max="32"
               value={config.dotSize || 6}
-              onChange={(e) => onChange({ dotSize: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ dotSize: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -1804,7 +1800,7 @@ function RadarChartConfig({
               min="0"
               max="10"
               value={config.dotBorderWidth || 0}
-              onChange={(e) => onChange({ dotBorderWidth: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ dotBorderWidth: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -1832,7 +1828,7 @@ function RadarChartConfig({
               max="1"
               step="0.1"
               value={config.fillOpacity || 0.25}
-              onChange={(e) => onChange({ fillOpacity: parseFloat(e.target.value) })}
+              onChange={(e) => onChange({ fillOpacity: Number.parseFloat(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -1910,7 +1906,7 @@ function HeatmapChartConfig({
             max="1"
             step="0.1"
             value={config.cellOpacity || 1}
-            onChange={(e) => onChange({ cellOpacity: parseFloat(e.target.value) })}
+            onChange={(e) => onChange({ cellOpacity: Number.parseFloat(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -1921,7 +1917,7 @@ function HeatmapChartConfig({
             min="0"
             max="10"
             value={config.cellBorderWidth || 0}
-            onChange={(e) => onChange({ cellBorderWidth: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ cellBorderWidth: Number.parseInt(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -2116,7 +2112,7 @@ function AreaBumpChartConfig({
             min="0"
             max="32"
             value={config.spacing || 8}
-            onChange={(e) => onChange({ spacing: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ spacing: Number.parseInt(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -2133,7 +2129,7 @@ function AreaBumpChartConfig({
             max="1"
             step="0.1"
             value={config.xPadding || 0.5}
-            onChange={(e) => onChange({ xPadding: parseFloat(e.target.value) })}
+            onChange={(e) => onChange({ xPadding: Number.parseFloat(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -2158,7 +2154,7 @@ function AreaBumpChartConfig({
               min="0"
               max="32"
               value={config.startLabelPadding || 16}
-              onChange={(e) => onChange({ startLabelPadding: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ startLabelPadding: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>
@@ -2193,7 +2189,7 @@ function AreaBumpChartConfig({
               min="0"
               max="32"
               value={config.endLabelPadding || 16}
-              onChange={(e) => onChange({ endLabelPadding: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ endLabelPadding: Number.parseInt(e.target.value) })}
               className="w-full"
             />
           </div>

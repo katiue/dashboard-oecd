@@ -354,7 +354,7 @@ const PurePreviewMessage = ({
                               />
                               <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  <div className="size-2 bg-green-500 rounded-full" />
                                   <span className="text-sm font-medium text-green-800">
                                     Chart Created Successfully
                                   </span>

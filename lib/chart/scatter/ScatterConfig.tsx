@@ -1,6 +1,6 @@
 // Scatter Plot Configuration Component
 import React from 'react';
-import { ScatterPlotConfig } from './ScatterSchema';
+import type { ScatterPlotConfig } from './ScatterSchema';
 
 interface ScatterConfigProps {
   config: ScatterPlotConfig;
@@ -18,13 +18,14 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
       <div>
         <h5 className="font-medium mb-2">Node Properties</h5>
         <div>
-          <label className="text-sm">Node Size ({nodeSize})</label>
+          <label htmlFor="scatter-node-size" className="text-sm">Node Size ({nodeSize})</label>
           <input
+            id="scatter-node-size"
             type="range"
             min="4"
             max="64"
             value={nodeSize}
-            onChange={(e) => onChange({ nodeSize: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ nodeSize: Number.parseInt(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -35,8 +36,9 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
         <h5 className="font-medium mb-2">X Scale</h5>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-sm">Type</label>
+            <label htmlFor="scatter-xscale-type" className="text-sm">Type</label>
             <select
+              id="scatter-xscale-type"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.xScale?.type || 'linear'}
               onChange={(e) => onChange({ 
@@ -53,8 +55,9 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
             </select>
           </div>
           <div>
-            <label className="text-sm">Min</label>
+            <label htmlFor="scatter-xscale-min" className="text-sm">Min</label>
             <input
+              id="scatter-xscale-min"
               type="text"
               className="w-full mt-1 p-1 border rounded text-xs"
               placeholder="auto"
@@ -70,8 +73,9 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
           </div>
         </div>
         <div className="mt-2">
-          <label className="text-sm">Max</label>
+          <label htmlFor="scatter-xscale-max" className="text-sm">Max</label>
           <input
+            id="scatter-xscale-max"
             type="text"
             className="w-full mt-1 p-1 border rounded text-xs"
             placeholder="auto"
@@ -92,8 +96,9 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
         <h5 className="font-medium mb-2">Y Scale</h5>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-sm">Type</label>
+            <label htmlFor="scatter-yscale-type" className="text-sm">Type</label>
             <select
+              id="scatter-yscale-type"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.yScale?.type || 'linear'}
               onChange={(e) => onChange({ 
@@ -110,8 +115,9 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
             </select>
           </div>
           <div>
-            <label className="text-sm">Min</label>
+            <label htmlFor="scatter-yscale-min" className="text-sm">Min</label>
             <input
+              id="scatter-yscale-min"
               type="text"
               className="w-full mt-1 p-1 border rounded text-xs"
               placeholder="auto"
@@ -127,8 +133,9 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
           </div>
         </div>
         <div className="mt-2">
-          <label className="text-sm">Max</label>
+          <label htmlFor="scatter-yscale-max" className="text-sm">Max</label>
           <input
+            id="scatter-yscale-max"
             type="text"
             className="w-full mt-1 p-1 border rounded text-xs"
             placeholder="auto"
@@ -150,37 +157,41 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center space-x-2">
             <input
+              id="scatter-enable-grid-x"
               type="checkbox"
               checked={config.enableGridX || false}
               onChange={(e) => onChange({ enableGridX: e.target.checked })}
             />
-            <label className="text-sm">Enable Grid X</label>
+            <label htmlFor="scatter-enable-grid-x" className="text-sm">Enable Grid X</label>
           </div>
           <div className="flex items-center space-x-2">
             <input
+              id="scatter-enable-grid-y"
               type="checkbox"
               checked={config.enableGridY || false}
               onChange={(e) => onChange({ enableGridY: e.target.checked })}
             />
-            <label className="text-sm">Enable Grid Y</label>
+            <label htmlFor="scatter-enable-grid-y" className="text-sm">Enable Grid Y</label>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-2">
           <div className="flex items-center space-x-2">
             <input
+              id="scatter-use-mesh"
               type="checkbox"
               checked={config.useMesh || false}
               onChange={(e) => onChange({ useMesh: e.target.checked })}
             />
-            <label className="text-sm">Use Mesh</label>
+            <label htmlFor="scatter-use-mesh" className="text-sm">Use Mesh</label>
           </div>
           <div className="flex items-center space-x-2">
             <input
+              id="scatter-debug-mesh"
               type="checkbox"
               checked={config.debugMesh || false}
               onChange={(e) => onChange({ debugMesh: e.target.checked })}
             />
-            <label className="text-sm">Debug Mesh</label>
+            <label htmlFor="scatter-debug-mesh" className="text-sm">Debug Mesh</label>
           </div>
         </div>
       </div>
@@ -191,45 +202,49 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center space-x-2">
             <input
+              id="scatter-axis-top"
               type="checkbox"
               checked={!!config.axisTop}
               onChange={(e) => onChange({ 
                 axisTop: e.target.checked ? { legend: 'Top Axis' } : null 
               })}
             />
-            <label className="text-xs">Top Axis</label>
+            <label htmlFor="scatter-axis-top" className="text-xs">Top Axis</label>
           </div>
           <div className="flex items-center space-x-2">
             <input
+              id="scatter-axis-right"
               type="checkbox"
               checked={!!config.axisRight}
               onChange={(e) => onChange({ 
                 axisRight: e.target.checked ? { legend: 'Right Axis' } : null 
               })}
             />
-            <label className="text-xs">Right Axis</label>
+            <label htmlFor="scatter-axis-right" className="text-xs">Right Axis</label>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 mt-2">
           <div className="flex items-center space-x-2">
             <input
+              id="scatter-axis-bottom"
               type="checkbox"
               checked={!!config.axisBottom}
               onChange={(e) => onChange({ 
                 axisBottom: e.target.checked ? { legend: 'X Axis' } : null 
               })}
             />
-            <label className="text-xs">Bottom Axis</label>
+            <label htmlFor="scatter-axis-bottom" className="text-xs">Bottom Axis</label>
           </div>
           <div className="flex items-center space-x-2">
             <input
+              id="scatter-axis-left"
               type="checkbox"
               checked={!!config.axisLeft}
               onChange={(e) => onChange({ 
                 axisLeft: e.target.checked ? { legend: 'Y Axis' } : null 
               })}
             />
-            <label className="text-xs">Left Axis</label>
+            <label htmlFor="scatter-axis-left" className="text-xs">Left Axis</label>
           </div>
         </div>
       </div>
@@ -239,6 +254,7 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
         <h5 className="font-medium mb-2">Legends</h5>
         <div className="flex items-center space-x-2">
           <input
+            id="scatter-enable-legends"
             type="checkbox"
             checked={!!(config.legends && config.legends.length > 0)}
             onChange={(e) => onChange({ 
@@ -253,7 +269,7 @@ export const ScatterConfig: React.FC<ScatterConfigProps> = ({ config, onChange }
               }] : []
             })}
           />
-          <label className="text-sm">Enable Legends</label>
+          <label htmlFor="scatter-enable-legends" className="text-sm">Enable Legends</label>
         </div>
       </div>
     </div>

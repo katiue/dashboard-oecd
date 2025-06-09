@@ -1,7 +1,7 @@
 import React from 'react';
 import { ResponsiveCalendar } from '@nivo/calendar';
-import { CalendarChartConfig } from './CalendarSchema';
-import { CalendarDataPoint } from './CalendarDataProcessor';
+import type { CalendarChartConfig } from './CalendarSchema';
+import type { CalendarDataPoint } from './CalendarDataProcessor';
 
 interface CalendarRendererProps {
   data: CalendarDataPoint[];

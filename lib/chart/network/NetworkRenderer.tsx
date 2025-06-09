@@ -15,7 +15,7 @@ export const NetworkRenderer: React.FC<NetworkRendererProps> = ({
 }) => {
   if (!data || !data.nodes || data.nodes.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+      <div className="flex size-full items-center justify-center text-muted-foreground">
         No data available for network chart
       </div>
     );

@@ -204,15 +204,15 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
           if (xScaleType || xScaleMin !== undefined || xScaleMax !== undefined) {
             chartConfig.xScale = {
               type: xScaleType || 'point',
-              ...(xScaleMin !== undefined && { min: xScaleMin === 'auto' ? 'auto' : parseFloat(xScaleMin) || 'auto' }),
-              ...(xScaleMax !== undefined && { max: xScaleMax === 'auto' ? 'auto' : parseFloat(xScaleMax) || 'auto' })
+              ...(xScaleMin !== undefined && { min: xScaleMin === 'auto' ? 'auto' : Number.parseFloat(xScaleMin) || 'auto' }),
+              ...(xScaleMax !== undefined && { max: xScaleMax === 'auto' ? 'auto' : Number.parseFloat(xScaleMax) || 'auto' })
             };
           }
           if (yScaleType || yScaleMin !== undefined || yScaleMax !== undefined) {
             chartConfig.yScale = {
               type: yScaleType || 'linear',
-              ...(yScaleMin !== undefined && { min: yScaleMin === 'auto' ? 'auto' : parseFloat(yScaleMin) || 'auto' }),
-              ...(yScaleMax !== undefined && { max: yScaleMax === 'auto' ? 'auto' : parseFloat(yScaleMax) || 'auto' })
+              ...(yScaleMin !== undefined && { min: yScaleMin === 'auto' ? 'auto' : Number.parseFloat(yScaleMin) || 'auto' }),
+              ...(yScaleMax !== undefined && { max: yScaleMax === 'auto' ? 'auto' : Number.parseFloat(yScaleMax) || 'auto' })
             };
           }
           break;
@@ -260,15 +260,15 @@ The tool will automatically fetch the CSV file, parse all the data, and configur
           if (xScaleType || xScaleMin !== undefined || xScaleMax !== undefined) {
             chartConfig.xScale = {
               type: xScaleType || 'linear',
-              ...(xScaleMin !== undefined && { min: xScaleMin === 'auto' ? 'auto' : parseFloat(xScaleMin) || 'auto' }),
-              ...(xScaleMax !== undefined && { max: xScaleMax === 'auto' ? 'auto' : parseFloat(xScaleMax) || 'auto' })
+              ...(xScaleMin !== undefined && { min: xScaleMin === 'auto' ? 'auto' : Number.parseFloat(xScaleMin) || 'auto' }),
+              ...(xScaleMax !== undefined && { max: xScaleMax === 'auto' ? 'auto' : Number.parseFloat(xScaleMax) || 'auto' })
             };
           }
           if (yScaleType || yScaleMin !== undefined || yScaleMax !== undefined) {
             chartConfig.yScale = {
               type: yScaleType || 'linear',
-              ...(yScaleMin !== undefined && { min: yScaleMin === 'auto' ? 'auto' : parseFloat(yScaleMin) || 'auto' }),
-              ...(yScaleMax !== undefined && { max: yScaleMax === 'auto' ? 'auto' : parseFloat(yScaleMax) || 'auto' })
+              ...(yScaleMin !== undefined && { min: yScaleMin === 'auto' ? 'auto' : Number.parseFloat(yScaleMin) || 'auto' }),
+              ...(yScaleMax !== undefined && { max: yScaleMax === 'auto' ? 'auto' : Number.parseFloat(yScaleMax) || 'auto' })
             };
           }
           break;

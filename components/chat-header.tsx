@@ -2,14 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback , memo } from 'react';
 
 import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from './icons';
 import { useSidebar } from './ui/sidebar';
-import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { type VisibilityType, VisibilitySelector } from './visibility-selector';
 import { ApiKeySelector } from './api-key-selector';
@@ -53,7 +52,7 @@ function PureChatHeader({
       
       // Always open the dashboard - let it handle the "no data" state internally
       let csvData = '';
-      let dashboardData = dashboard.dashboardData; // Use existing dashboard data
+      const dashboardData = dashboard.dashboardData; // Use existing dashboard data
       
       if (csvFiles.length > 0) {
         // Use the first CSV file found

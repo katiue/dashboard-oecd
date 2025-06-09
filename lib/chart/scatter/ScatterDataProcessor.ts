@@ -1,5 +1,5 @@
 // Scatter Plot Data Processor
-import { ScatterPlotConfig } from './ScatterSchema';
+import type { ScatterPlotConfig } from './ScatterSchema';
 
 // Simple CSV parser function
 function parseCSV(csvText: string): { headers: string[], data: Record<string, string>[] } {
@@ -22,14 +22,14 @@ function parseCSV(csvText: string): { headers: string[], data: Record<string, st
 // Helper function to convert string values to numbers
 function toNumber(value: string | number): number {
   if (typeof value === 'number') {
-    return isFinite(value) && !isNaN(value) ? value : 0;
+    return Number.isFinite(value) && !Number.isNaN(value) ? value : 0;
   }
   const cleaned = String(value).trim();
   if (cleaned === '' || cleaned === 'null' || cleaned === 'undefined') {
     return 0;
   }
   const num = Number.parseFloat(cleaned);
-  return isFinite(num) && !isNaN(num) ? num : 0;
+  return Number.isFinite(num) && !Number.isNaN(num) ? num : 0;
 }
 
 // Helper function to clean string values
@@ -54,13 +54,13 @@ export function processScatterData(csvData: string, config: ScatterPlotConfig): 
       const x = toNumber(row[xColumn]);
       const y = toNumber(row[yColumn]);
       
-      if (!isFinite(x) || !isFinite(y)) return null;
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
       
       const point: any = { x, y };
         
       if (sizeColumn && headers.includes(sizeColumn)) {
         const size = toNumber(row[sizeColumn]);
-        if (isFinite(size) && size > 0) {
+        if (Number.isFinite(size) && size > 0) {
           point.size = size;
         }
       }
@@ -82,7 +82,7 @@ export function processScatterData(csvData: string, config: ScatterPlotConfig): 
     const x = toNumber(row[xColumn]);
     const y = toNumber(row[yColumn]);
     
-    if (!isFinite(x) || !isFinite(y)) return;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
     
     if (!seriesMap[series]) {
       seriesMap[series] = [];
@@ -92,7 +92,7 @@ export function processScatterData(csvData: string, config: ScatterPlotConfig): 
     
     if (sizeColumn && headers.includes(sizeColumn)) {
       const size = toNumber(row[sizeColumn]);
-      if (isFinite(size) && size > 0) {
+      if (Number.isFinite(size) && size > 0) {
         point.size = size;
       }
     }

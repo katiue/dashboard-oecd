@@ -30,7 +30,7 @@ export function processSunburstData(csvData: string, config: SunburstChartConfig
   // For now, create a simple flat structure
   const children = data.map((row, index) => ({
     name: row[idColumn] || `item-${index}`,
-    value: parseFloat(row[valueColumn]) || 0
+    value: Number.parseFloat(row[valueColumn]) || 0
   })).filter(item => item.value > 0);
   
   return { name: 'root', children };

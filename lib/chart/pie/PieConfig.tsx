@@ -21,7 +21,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             max="0.9"
             step="0.1"
             value={config.innerRadius || 0.5}
-            onChange={(e) => onChange({ innerRadius: parseFloat(e.target.value) })}
+            onChange={(e) => onChange({ innerRadius: Number.parseFloat(e.target.value) })}
             className="w-full"
           />
           <div className="text-xs text-muted-foreground">0 = full pie, 0.5 = donut</div>
@@ -34,7 +34,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             max="10"
             step="0.1"
             value={config.padAngle || 0.7}
-            onChange={(e) => onChange({ padAngle: parseFloat(e.target.value) })}
+            onChange={(e) => onChange({ padAngle: Number.parseFloat(e.target.value) })}
             className="w-full"
           />
         </div>
@@ -49,7 +49,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             min="0"
             max="10"
             value={config.cornerRadius || 3}
-            onChange={(e) => onChange({ cornerRadius: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ cornerRadius: Number.parseInt(e.target.value) })}
             className="w-full"
           />
           <div className="text-xs text-muted-foreground">{config.cornerRadius || 3}px</div>
@@ -61,7 +61,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             min="0"
             max="360"
             value={config.startAngle || 0}
-            onChange={(e) => onChange({ startAngle: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ startAngle: Number.parseInt(e.target.value) })}
             className="w-full"
           />
           <div className="text-xs text-muted-foreground">{config.startAngle || 0}°</div>
@@ -73,7 +73,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             min="0"
             max="360"
             value={config.endAngle || 360}
-            onChange={(e) => onChange({ endAngle: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ endAngle: Number.parseInt(e.target.value) })}
             className="w-full"
           />
           <div className="text-xs text-muted-foreground">{config.endAngle || 360}°</div>
@@ -97,7 +97,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             min="0"
             max="10"
             value={config.borderWidth || 1}
-            onChange={(e) => onChange({ borderWidth: parseInt(e.target.value) })}
+            onChange={(e) => onChange({ borderWidth: Number.parseInt(e.target.value) })}
             className="w-full"
           />
           <div className="text-xs text-muted-foreground">{config.borderWidth || 1}px</div>
@@ -146,7 +146,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
               min="0"
               max="45"
               value={config.arcLabelsSkipAngle || 10}
-              onChange={(e) => onChange({ arcLabelsSkipAngle: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ arcLabelsSkipAngle: Number.parseInt(e.target.value) })}
               className="w-full"
             />
             <div className="text-xs text-muted-foreground">{config.arcLabelsSkipAngle || 10}°</div>
@@ -159,7 +159,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
               max="2"
               step="0.1"
               value={config.arcLabelsRadiusOffset || 0.4}
-              onChange={(e) => onChange({ arcLabelsRadiusOffset: parseFloat(e.target.value) })}
+              onChange={(e) => onChange({ arcLabelsRadiusOffset: Number.parseFloat(e.target.value) })}
               className="w-full"
             />
             <div className="text-xs text-muted-foreground">{config.arcLabelsRadiusOffset || 0.4}</div>
@@ -200,7 +200,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
               min="0"
               max="45"
               value={config.arcLinkLabelsSkipAngle || 10}
-              onChange={(e) => onChange({ arcLinkLabelsSkipAngle: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ arcLinkLabelsSkipAngle: Number.parseInt(e.target.value) })}
               className="w-full"
             />
             <div className="text-xs text-muted-foreground">{config.arcLinkLabelsSkipAngle || 10}°</div>
@@ -212,7 +212,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
               min="1"
               max="10"
               value={config.arcLinkLabelsThickness || 2}
-              onChange={(e) => onChange({ arcLinkLabelsThickness: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ arcLinkLabelsThickness: Number.parseInt(e.target.value) })}
               className="w-full"
             />
             <div className="text-xs text-muted-foreground">{config.arcLinkLabelsThickness || 2}px</div>
@@ -224,7 +224,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
               min="0"
               max="36"
               value={config.arcLinkLabelsDiagonalLength || 16}
-              onChange={(e) => onChange({ arcLinkLabelsDiagonalLength: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ arcLinkLabelsDiagonalLength: Number.parseInt(e.target.value) })}
               className="w-full"
             />
             <div className="text-xs text-muted-foreground">{config.arcLinkLabelsDiagonalLength || 16}px</div>
@@ -236,7 +236,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
               min="0"
               max="36"
               value={config.arcLinkLabelsStraightLength || 24}
-              onChange={(e) => onChange({ arcLinkLabelsStraightLength: parseInt(e.target.value) })}
+              onChange={(e) => onChange({ arcLinkLabelsStraightLength: Number.parseInt(e.target.value) })}
               className="w-full"
             />
             <div className="text-xs text-muted-foreground">{config.arcLinkLabelsStraightLength || 24}px</div>
