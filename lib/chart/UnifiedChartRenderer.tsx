@@ -122,7 +122,7 @@ export const UnifiedChartRenderer: React.FC<UnifiedChartRendererProps> = ({
   // Data validation
   if (!data || !Array.isArray(data) || data.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex size-full items-center justify-center">
         <p className="text-muted-foreground">No data available for this chart</p>
       </div>
     );
@@ -179,7 +179,7 @@ export const UnifiedChartRenderer: React.FC<UnifiedChartRendererProps> = ({
         return <VoronoiRenderer data={data} config={config as VoronoiChartConfig} theme={theme} />;
       default:
         return (
-          <div className="flex h-full w-full items-center justify-center">
+          <div className="flex size-full items-center justify-center">
             <p className="text-muted-foreground">
               Unsupported chart type: {chartType}
             </p>
@@ -189,7 +189,7 @@ export const UnifiedChartRenderer: React.FC<UnifiedChartRendererProps> = ({
   } catch (error) {
     console.error("Error rendering chart:", error);
     return (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex size-full items-center justify-center">
         <p className="text-muted-foreground">
           Error rendering {chartType} chart
         </p>

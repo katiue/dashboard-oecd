@@ -1310,7 +1310,7 @@ export const preparePatentDataForVisualization = tool({
       // Prepare filtering infrastructure
       if (enableFiltering) {
         visualizationConfig.filterOptions = {};
-        visualizationConfig.filterableFields.forEach(field => {
+        visualizationConfig.filterableFields.forEach((field: string | number) => {
           const uniqueValues = [...new Set(preparedData.map(row => row[field]))].filter(v => v != null);
           visualizationConfig.filterOptions[field] = {
             type: typeof uniqueValues[0] === 'number' ? 'numeric' : 'categorical',
