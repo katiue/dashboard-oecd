@@ -15,19 +15,21 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
       <div className="grid grid-cols-2 gap-4">
         <div className="flex items-center space-x-2">
           <input
+            id="force-square"
             type="checkbox"
             checked={config.forceSquare || false}
             onChange={(e) => onChange({ forceSquare: e.target.checked })}
           />
-          <label className="text-sm">Force Square Cells</label>
+          <label htmlFor="force-square" className="text-sm">Force Square Cells</label>
         </div>
         <div className="flex items-center space-x-2">
           <input
+            id="enable-labels"
             type="checkbox"
             checked={config.enableLabels !== false}
             onChange={(e) => onChange({ enableLabels: e.target.checked })}
           />
-          <label className="text-sm">Enable Labels</label>
+          <label htmlFor="enable-labels" className="text-sm">Enable Labels</label>
         </div>
       </div>
 
@@ -36,8 +38,9 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
         <h5 className="font-medium mb-2">Cell Properties</h5>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm">Cell Opacity ({config.cellOpacity || 1})</label>
+            <label htmlFor="cell-opacity" className="text-sm">Cell Opacity ({config.cellOpacity || 1})</label>
             <input
+              id="cell-opacity"
               type="range"
               min="0"
               max="1"
@@ -48,8 +51,9 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
             />
           </div>
           <div>
-            <label className="text-sm">Border Width ({config.cellBorderWidth || 0})</label>
+            <label htmlFor="border-width" className="text-sm">Border Width ({config.cellBorderWidth || 0})</label>
             <input
+              id="border-width"
               type="range"
               min="0"
               max="10"
@@ -60,8 +64,9 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
           </div>
         </div>
         <div className="mt-2">
-          <label className="text-sm">Border Color</label>
+          <label htmlFor="border-color" className="text-sm">Border Color</label>
           <input
+            id="border-color"
             type="color"
             className="w-full mt-1 p-1 border rounded"
             value={typeof config.cellBorderColor === 'string' ? config.cellBorderColor : '#000000'}
@@ -75,8 +80,9 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
         <h5 className="font-medium mb-2">Color Scale</h5>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm">Color Scheme</label>
+            <label htmlFor="color-scheme" className="text-sm">Color Scheme</label>
             <select
+              id="color-scheme"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.colorScale?.scheme || 'blues'}
               onChange={(e) => onChange({ 
@@ -100,8 +106,9 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
             </select>
           </div>
           <div>
-            <label className="text-sm">Scale Type</label>
+            <label htmlFor="scale-type" className="text-sm">Scale Type</label>
             <select
+              id="scale-type"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.colorScale?.type || 'quantize'}
               onChange={(e) => onChange({ 
@@ -119,8 +126,9 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
         </div>
         <div className="grid grid-cols-2 gap-4 mt-2">
           <div>
-            <label className="text-sm">Min Value</label>
+            <label htmlFor="min-value" className="text-sm">Min Value</label>
             <input
+              id="min-value"
               type="text"
               className="w-full mt-1 p-1 border rounded text-xs"
               placeholder="auto"
@@ -135,8 +143,9 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
             />
           </div>
           <div>
-            <label className="text-sm">Max Value</label>
+            <label htmlFor="max-value" className="text-sm">Max Value</label>
             <input
+              id="max-value"
               type="text"
               className="w-full mt-1 p-1 border rounded text-xs"
               placeholder="auto"
@@ -159,28 +168,31 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center space-x-2">
             <input
+              id="axis-top"
               type="checkbox"
               checked={!!config.axisTop}
               onChange={(e) => onChange({ 
                 axisTop: e.target.checked ? { legend: 'Top Axis' } : null 
               })}
             />
-            <label className="text-xs">Top Axis</label>
+            <label htmlFor="axis-top" className="text-xs">Top Axis</label>
           </div>
           <div className="flex items-center space-x-2">
             <input
+              id="axis-right"
               type="checkbox"
               checked={!!config.axisRight}
               onChange={(e) => onChange({ 
                 axisRight: e.target.checked ? { legend: 'Right Axis' } : null 
               })}
             />
-            <label className="text-xs">Right Axis</label>
+            <label htmlFor="axis-right" className="text-xs">Right Axis</label>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 mt-2">
           <div className="flex items-center space-x-2">
             <input
+              id="axis-bottom"
               type="checkbox"
               checked={!!config.axisBottom}
               onChange={(e) => onChange({ 
@@ -190,10 +202,11 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
                 } : null 
               })}
             />
-            <label className="text-xs">Bottom Axis</label>
+            <label htmlFor="axis-bottom" className="text-xs">Bottom Axis</label>
           </div>
           <div className="flex items-center space-x-2">
             <input
+              id="axis-left"
               type="checkbox"
               checked={!!config.axisLeft}
               onChange={(e) => onChange({ 
@@ -204,7 +217,7 @@ export const HeatmapConfig: React.FC<HeatmapConfigProps> = ({ config, onChange }
                 } : null 
               })}
             />
-            <label className="text-xs">Left Axis</label>
+            <label htmlFor="axis-left" className="text-xs">Left Axis</label>
           </div>
         </div>
       </div>

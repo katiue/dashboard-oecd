@@ -7,8 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FullscreenIcon } from "@/components/icons"
@@ -393,7 +391,7 @@ function FullScreenChartView({
                     <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-300">Data Processing Pipeline</h4>
                     <div className="text-sm space-y-1">
                       {(chart as any).processingSteps.map((step: string, index: number) => (
-                        <div key={index} className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                        <div key={`step-${index}-${step.slice(0, 20)}`} className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                           <span className="size-4 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
                             {index + 1}
                           </span>
@@ -487,9 +485,9 @@ function CsvDataPanel({ chart }: { chart: DashboardChartConfig }) {
         {/* Headers */}
         <div className="bg-muted/50 border-b overflow-x-auto">
           <div className="flex min-w-max">
-            {headers.map((header: string, index: number) => (
+            {headers.map((header: string) => (
               <div
-                key={index}
+                key={`header-${header}`}
                 className="px-3 py-2 text-xs font-medium text-muted-foreground border-r last:border-r-0 min-w-24"
               >
                 {header.replace(/"/g, "")}
@@ -503,10 +501,10 @@ function CsvDataPanel({ chart }: { chart: DashboardChartConfig }) {
           {filteredRows.slice(0, 100).map((row: string, rowIndex: number) => {
             const cells = row.split(",")
             return (
-              <div key={rowIndex} className="flex min-w-max border-b last:border-b-0 hover:bg-muted/30">
+              <div key={`row-${rowIndex}-${cells[0]?.slice(0, 10) || rowIndex}`} className="flex min-w-max border-b last:border-b-0 hover:bg-muted/30">
                 {cells.map((cell: string, cellIndex: number) => (
                   <div
-                    key={cellIndex}
+                    key={`cell-${rowIndex}-${cellIndex}-${cell.slice(0, 10)}`}
                     className="px-3 py-2 text-xs border-r last:border-r-0 min-w-24"
                     title={cell.replace(/"/g, "")}
                   >

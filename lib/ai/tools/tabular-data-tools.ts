@@ -422,7 +422,9 @@ export const calculateStatistics = tool({
         const median = sorted[Math.floor(values.length / 2)];
         const mode = (() => {
           const freq: Record<number, number> = {};
-          values.forEach((v: any) => freq[v] = (freq[v] || 0) + 1);
+          values.forEach((v: any) => {
+            freq[v] = (freq[v] || 0) + 1;
+          });
           const maxFreq = Math.max(...Object.values(freq));
           return Object.keys(freq).find(k => freq[Number(k)] === maxFreq);
         })();
@@ -1234,7 +1236,9 @@ export const preparePatentDataForVisualization = tool({
               const country = row[countryColumns[0]];
               if (!countryAggregation[country]) {
                 countryAggregation[country] = { [countryColumns[0]]: country };
-                patentColumns.forEach(col => countryAggregation[country][col] = 0);
+                patentColumns.forEach(col => {
+                  countryAggregation[country][col] = 0;
+                });
               }
               
               patentColumns.forEach(col => {

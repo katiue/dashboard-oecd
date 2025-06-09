@@ -39,7 +39,6 @@ export function processCalendarData(csvData: string, config: CalendarChartConfig
           }
 
           // Parse and format date
-          let formattedDate: string;
           const date = new Date(dateValue);
           
           if (Number.isNaN(date.getTime())) {
@@ -48,7 +47,7 @@ export function processCalendarData(csvData: string, config: CalendarChartConfig
           }
 
           // Format as YYYY-MM-DD
-          formattedDate = date.toISOString().split('T')[0];
+          const formattedDate = date.toISOString().split('T')[0];
 
           // Parse value
           const numericValue = typeof value === 'number' ? value : Number.parseFloat(value);

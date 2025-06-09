@@ -14,8 +14,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
       {/* Basic Properties */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">Inner Radius ({config.innerRadius || 0.5})</label>
+          <label htmlFor="inner-radius" className="text-sm font-medium">Inner Radius ({config.innerRadius || 0.5})</label>
           <input
+            id="inner-radius"
             type="range"
             min="0"
             max="0.9"
@@ -27,8 +28,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
           <div className="text-xs text-muted-foreground">0 = full pie, 0.5 = donut</div>
         </div>
         <div>
-          <label className="text-sm font-medium">Pad Angle ({config.padAngle || 0.7}°)</label>
+          <label htmlFor="pad-angle" className="text-sm font-medium">Pad Angle ({config.padAngle || 0.7}°)</label>
           <input
+            id="pad-angle"
             type="range"
             min="0"
             max="10"
@@ -43,8 +45,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
       {/* Angles and Radius */}
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="text-sm font-medium">Corner Radius</label>
+          <label htmlFor="corner-radius" className="text-sm font-medium">Corner Radius</label>
           <input
+            id="corner-radius"
             type="range"
             min="0"
             max="10"
@@ -55,8 +58,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
           <div className="text-xs text-muted-foreground">{config.cornerRadius || 3}px</div>
         </div>
         <div>
-          <label className="text-sm font-medium">Start Angle</label>
+          <label htmlFor="start-angle" className="text-sm font-medium">Start Angle</label>
           <input
+            id="start-angle"
             type="range"
             min="0"
             max="360"
@@ -67,8 +71,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
           <div className="text-xs text-muted-foreground">{config.startAngle || 0}°</div>
         </div>
         <div>
-          <label className="text-sm font-medium">End Angle</label>
+          <label htmlFor="end-angle" className="text-sm font-medium">End Angle</label>
           <input
+            id="end-angle"
             type="range"
             min="0"
             max="360"
@@ -84,15 +89,17 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
       <div className="grid grid-cols-3 gap-4">
         <div className="flex items-center space-x-2">
           <input
+            id="sort-by-value"
             type="checkbox"
             checked={config.sortByValue || false}
             onChange={(e) => onChange({ sortByValue: e.target.checked })}
           />
-          <label className="text-sm">Sort by Value</label>
+          <label htmlFor="sort-by-value" className="text-sm">Sort by Value</label>
         </div>
         <div>
-          <label className="text-sm">Border Width</label>
+          <label htmlFor="border-width" className="text-sm">Border Width</label>
           <input
+            id="border-width"
             type="range"
             min="0"
             max="10"
@@ -103,8 +110,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
           <div className="text-xs text-muted-foreground">{config.borderWidth || 1}px</div>
         </div>
         <div>
-          <label className="text-sm">Border Color</label>
+          <label htmlFor="border-color" className="text-sm">Border Color</label>
           <input
+            id="border-color"
             type="color"
             className="w-full mt-1 p-1 border rounded"
             value={typeof config.borderColor === 'string' ? config.borderColor : '#000000'}
@@ -119,15 +127,17 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center space-x-2">
             <input
+              id="enable-arc-labels"
               type="checkbox"
               checked={config.enableArcLabels !== false}
               onChange={(e) => onChange({ enableArcLabels: e.target.checked })}
             />
-            <label className="text-sm">Enable Arc Labels</label>
+            <label htmlFor="enable-arc-labels" className="text-sm">Enable Arc Labels</label>
           </div>
           <div>
-            <label className="text-sm">Arc Label Type</label>
+            <label htmlFor="arc-label-type" className="text-sm">Arc Label Type</label>
             <select
+              id="arc-label-type"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.arcLabel || 'formattedValue'}
               onChange={(e) => onChange({ arcLabel: e.target.value as any })}
@@ -140,8 +150,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
         </div>
         <div className="grid grid-cols-2 gap-4 mt-2">
           <div>
-            <label className="text-sm">Skip Angle</label>
+            <label htmlFor="arc-skip-angle" className="text-sm">Skip Angle</label>
             <input
+              id="arc-skip-angle"
               type="range"
               min="0"
               max="45"
@@ -152,8 +163,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             <div className="text-xs text-muted-foreground">{config.arcLabelsSkipAngle || 10}°</div>
           </div>
           <div>
-            <label className="text-sm">Radius Offset</label>
+            <label htmlFor="arc-radius-offset" className="text-sm">Radius Offset</label>
             <input
+              id="arc-radius-offset"
               type="range"
               min="0.1"
               max="2"
@@ -173,15 +185,17 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center space-x-2">
             <input
+              id="enable-arc-link-labels"
               type="checkbox"
               checked={config.enableArcLinkLabels !== false}
               onChange={(e) => onChange({ enableArcLinkLabels: e.target.checked })}
             />
-            <label className="text-sm">Enable Link Labels</label>
+            <label htmlFor="enable-arc-link-labels" className="text-sm">Enable Link Labels</label>
           </div>
           <div>
-            <label className="text-sm">Link Label Type</label>
+            <label htmlFor="link-label-type" className="text-sm">Link Label Type</label>
             <select
+              id="link-label-type"
               className="w-full mt-1 p-1 border rounded text-xs"
               value={config.arcLinkLabel || 'id'}
               onChange={(e) => onChange({ arcLinkLabel: e.target.value as any })}
@@ -194,8 +208,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
         </div>
         <div className="grid grid-cols-4 gap-2 mt-2">
           <div>
-            <label className="text-xs">Skip Angle</label>
+            <label htmlFor="link-skip-angle" className="text-xs">Skip Angle</label>
             <input
+              id="link-skip-angle"
               type="range"
               min="0"
               max="45"
@@ -206,8 +221,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             <div className="text-xs text-muted-foreground">{config.arcLinkLabelsSkipAngle || 10}°</div>
           </div>
           <div>
-            <label className="text-xs">Thickness</label>
+            <label htmlFor="link-thickness" className="text-xs">Thickness</label>
             <input
+              id="link-thickness"
               type="range"
               min="1"
               max="10"
@@ -218,8 +234,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             <div className="text-xs text-muted-foreground">{config.arcLinkLabelsThickness || 2}px</div>
           </div>
           <div>
-            <label className="text-xs">Diagonal Length</label>
+            <label htmlFor="diagonal-length" className="text-xs">Diagonal Length</label>
             <input
+              id="diagonal-length"
               type="range"
               min="0"
               max="36"
@@ -230,8 +247,9 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
             <div className="text-xs text-muted-foreground">{config.arcLinkLabelsDiagonalLength || 16}px</div>
           </div>
           <div>
-            <label className="text-xs">Straight Length</label>
+            <label htmlFor="straight-length" className="text-xs">Straight Length</label>
             <input
+              id="straight-length"
               type="range"
               min="0"
               max="36"
@@ -249,6 +267,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
         <h5 className="font-medium mb-2">Legends</h5>
         <div className="flex items-center space-x-2">
           <input
+            id="enable-legends"
             type="checkbox"
             checked={!!(config.legends && config.legends.length > 0)}
             onChange={(e) => onChange({ 
@@ -263,7 +282,7 @@ export const PieConfig: React.FC<PieConfigProps> = ({ config, onChange }) => {
               }] : []
             })}
           />
-          <label className="text-sm">Enable Legends</label>
+          <label htmlFor="enable-legends" className="text-sm">Enable Legends</label>
         </div>
       </div>
     </div>
