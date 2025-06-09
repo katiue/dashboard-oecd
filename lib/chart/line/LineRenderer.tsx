@@ -21,13 +21,74 @@ export const LineRenderer: React.FC<LineRendererProps> = ({
     );
   }
 
+  // Ensure data consistency based on xScale type
+  const processedData = data.map(series => ({
+    ...series,
+    data: series.data.map((point: any) => {
+      const xScaleType = config.xScale?.type || 'point';
+      
+      // Ensure x values match the scale type
+      let processedX = point.x;
+      
+      if (xScaleType === 'linear') {
+        // For linear scale, ensure x is a number
+        if (point.x instanceof Date) {
+          processedX = point.x.getTime(); // Convert Date to timestamp for linear scale
+        } else if (typeof point.x === 'string') {
+          const num = Number.parseFloat(point.x);
+          processedX = Number.isNaN(num) ? 0 : num;
+        } else if (typeof point.x !== 'number') {
+          processedX = 0;
+        }
+      } else if (xScaleType === 'time') {
+        // For time scale, ensure x is a Date object
+        if (!(point.x instanceof Date)) {
+          if (typeof point.x === 'string' || typeof point.x === 'number') {
+            const date = new Date(point.x);
+            processedX = Number.isNaN(date.getTime()) ? new Date() : date;
+          } else {
+            processedX = new Date();
+          }
+        }
+      } else {
+        // For point scale, ensure x is a string
+        if (point.x instanceof Date) {
+          processedX = point.x.toISOString().split('T')[0]; // Convert to date string
+        } else {
+          processedX = String(point.x);
+        }
+      }
+      
+      return {
+        x: processedX,
+        y: typeof point.y === 'number' ? point.y : Number.parseFloat(point.y) || 0
+      };
+    })
+  }));
+
+  // Prepare xScale configuration
+  const xScale = config.xScale || { type: 'point' };
+  
+  // Add debug logging for troubleshooting
+  if (process.env.NODE_ENV === 'development') {
+    console.log('LineRenderer Debug:', {
+      xScaleType: xScale.type,
+      sampleXValues: processedData[0]?.data?.slice(0, 3).map((p: any) => ({ 
+        value: p.x, 
+        type: typeof p.x, 
+        isDate: p.x instanceof Date 
+      })),
+      originalData: data[0]?.data?.slice(0, 3),
+    });
+  }
+
   return (
     <ResponsiveLine
-      data={data}
+      data={processedData}
       margin={config.margin || { top: 50, right: 110, bottom: 50, left: 60 }}
       curve={config.curve || 'linear'}
       lineWidth={config.lineWidth || 2}
-      xScale={config.xScale || { type: 'point' }}
+      xScale={xScale}
       yScale={config.yScale || { type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
       colors={config.colors?.scheme ? { scheme: config.colors.scheme } : { scheme: 'nivo' }}
       enablePoints={config.enablePoints !== false}

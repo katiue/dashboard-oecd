@@ -40,6 +40,41 @@ function cleanString(value: any): string {
   return cleaned || 'Unknown';
 }
 
+// Helper function to convert string to Date for time scales
+function toDate(value: any): Date | null {
+  if (value instanceof Date) {
+    return value;
+  }
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  
+  const cleaned = String(value).trim();
+  if (cleaned === '' || cleaned === 'null' || cleaned === 'undefined') {
+    return null;
+  }
+  
+  const date = new Date(cleaned);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+// Helper function to process X values based on scale type
+function processXValue(value: any, xScaleType?: string): any {
+  if (xScaleType === 'time') {
+    const date = toDate(value);
+    return date || new Date(); // Return current date as fallback for invalid dates
+  }
+  
+  // For linear scales, try to convert to number
+  if (xScaleType === 'linear') {
+    const num = toNumber(value);
+    return Number.isFinite(num) ? num : 0;
+  }
+  
+  // For point scales or default, return as string
+  return cleanString(value);
+}
+
 // Line Chart Data Processor
 export function processLineData(csvData: string, config: LineChartConfig): any[] {
   const { headers, data } = parseCSV(csvData);
@@ -47,14 +82,32 @@ export function processLineData(csvData: string, config: LineChartConfig): any[]
   
   if (!data.length || !headers.includes(xColumn)) return [];
   
+  const xScaleType = config.xScale?.type;
+  
   return yColumns
     .filter(col => headers.includes(col))
     .map(yCol => ({
       id: cleanString(yCol),
-      data: data.map(row => ({
-        x: cleanString(row[xColumn]) || 'unknown',
-        y: toNumber(row[yCol])
-      })).filter(point => point.x !== 'unknown' && Number.isFinite(point.y))
+      data: data.map(row => {
+        const xValue = processXValue(row[xColumn], xScaleType);
+        const yValue = toNumber(row[yCol]);
+        
+        // Skip invalid data points
+        if (xScaleType === 'time' && xValue instanceof Date && Number.isNaN(xValue.getTime())) {
+          return null;
+        }
+        if (xScaleType === 'linear' && !Number.isFinite(xValue)) {
+          return null;
+        }
+        if (!Number.isFinite(yValue)) {
+          return null;
+        }
+        
+        return {
+          x: xValue,
+          y: yValue
+        };
+      }).filter(point => point !== null)
     }))
     .filter(series => series.data.length > 0);
 }
