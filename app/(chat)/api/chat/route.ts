@@ -23,31 +23,24 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { filterCsvData } from '@/lib/ai/tools/filter-csv-data';
-import { readCsvFile } from '@/lib/ai/tools/read-csv-file';
 import { createInlineChart } from '@/lib/ai/tools/create-inline-chart';
 import { captureChartScreenshot } from '@/lib/ai/tools/capture-chart-screenshot';
 import { 
   loadData, 
-  cleanData, 
-  filterData, 
-  aggregateData, 
   transformData, 
   analyzeStats, 
   exportProcessedData,
   calculateStatistics,
   groupAndAggregate,
   sortData,
-  sumEntireColumn,
-  detectAndResolveDuplicates,
-  cleanDataForDashboard,
-  resolveDuplicatesForDashboard,
-  processDataForDashboard,
   loadOECDPatentData,
   cleanOECDPatentData,
-  preparePatentDataForVisualization
+  preparePatentDataForVisualization,
+  inferAndCastTypes,
+  filterData,
+  sumColumn
 } from '@/lib/ai/tools/tabular-data-tools';
-import { createDashboardChart } from '@/lib/ai/tools/create-dashboard-chart';
+import { createChartFromTabData } from '@/lib/ai/tools/create-dashboard-chart';
 
 
 import { isProductionEnvironment } from '@/lib/constants';
@@ -68,6 +61,12 @@ import {
   transformMessagesForAgent, 
   generateCsvSystemPrompt 
 } from '@/lib/ai/csv-transform';
+import { 
+  createLoadCsvFromUrl,
+  createCleanData,
+  createDetectAndResolveDuplicates,
+  createAggregateData
+} from '@/lib/ai/tools/tabular-data-tools';
 
 
 export const maxDuration = 60;
@@ -82,9 +81,7 @@ function getStreamContext() {
       });
     } catch (error: any) {
       if (error.message.includes('REDIS_URL')) {
-        console.log(
-          ' > Resumable streams are disabled due to missing REDIS_URL',
-        );
+        // Resumable streams are disabled due to missing REDIS_URL
       } else {
         console.error(error);
       }
@@ -123,8 +120,6 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       console.error('Failed to get message count:', error);
-      // For guest users, we'll allow them to continue with a default count of 0
-      // For other user types, we should enforce the limits more strictly
       if (userType !== 'guest') {
         return new ChatSDKError(
           'bad_request:database',
@@ -207,42 +202,20 @@ export async function POST(request: Request) {
         'bad_request:database',
         'Failed to create stream',
       ).toResponse();
-    } // Check for authorization header that might contain an API key
+    } 
     const authHeader = request.headers.get('Authorization');
     let customApiKey: string | undefined;
 
-    // If there's an Auth header in the format "Bearer API_KEY", extract the key
     if (authHeader?.startsWith('Bearer ')) {
       customApiKey = authHeader.substring(7);
-    }    // Create provider with custom API key if available
+    }    
     const provider = customApiKey ? createProvider(customApiKey) : myProvider;
 
     const stream = createDataStream({
       execute: (dataStream) => {
-        console.log('🌊 DataStream created, executing main handler...');
-        
-        // Extract CSV files from the entire conversation
         const conversationCsvFiles = extractCsvFiles(messages, previousMessages, message);
-        console.log('📁 CSV files extracted:', conversationCsvFiles.length);
-
-        // Transform messages to remove CSV attachments and add file references
         const transformedMessages = transformMessagesForAgent(messages, conversationCsvFiles);
-        console.log('🔄 Messages transformed for agent processing');
-
-        // Generate system prompt with CSV-specific instructions if needed
-        const systemPromptContent = systemPrompt({ selectedChatModel, requestHints }) + 
-          generateCsvSystemPrompt(conversationCsvFiles);
-        console.log('📝 System prompt generated with CSV instructions');
-
-        console.log('🔧 About to call streamText...');
-        console.log('🔍 Messages count:', transformedMessages.length);
-        console.log('🔍 System prompt length:', systemPromptContent.length);
-        console.log('🔍 Provider type:', provider.constructor.name);
-        console.log('🔍 Selected model:', selectedChatModel);
-        console.log('🔍 CSV files detected:', conversationCsvFiles.length);
-        console.log('🔍 Last message content preview:', `${transformedMessages[transformedMessages.length - 1]?.content?.slice(0, 200)}...`);
-        console.log('🔍 System prompt preview:', `${systemPromptContent.slice(0, 300)}...`);
-        
+        const systemPromptContent = systemPrompt({ selectedChatModel, requestHints }) +  generateCsvSystemPrompt(conversationCsvFiles);
         const result = streamText({
           model: provider.languageModel(selectedChatModel),
           system: systemPromptContent,
@@ -256,14 +229,9 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
-                  'filterCsvData',
-                  'readCsvFile',
-                  'createDashboardChart',
+                  'createChartFromTabData',
                   'createInlineChart',
                   'loadData',
-                  'cleanData',
-                  'filterData',
-                  'aggregateData',
                   'transformData',
                   'analyzeStats',
                   'exportProcessedData',
@@ -271,14 +239,14 @@ export async function POST(request: Request) {
                   'calculateStatistics',
                   'groupAndAggregate',
                   'sortData',
-                  'sumEntireColumn',
-                  'detectAndResolveDuplicates',
-                  'cleanDataForDashboard',
-                  'resolveDuplicatesForDashboard',
-                  'processDataForDashboard',
                   'loadOECDPatentData',
                   'cleanOECDPatentData',
                   'preparePatentDataForVisualization',
+                  'loadCsvFromUrl',
+                  'cleanData',
+                  'detectAndResolveDuplicates',
+                  'aggregateData',
+                  'sumColumn',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -289,14 +257,9 @@ export async function POST(request: Request) {
             requestSuggestions: requestSuggestions({
               session,
               dataStream,            }),
-            filterCsvData,
-            readCsvFile,
             createInlineChart,
-            createDashboardChart: createDashboardChart({ dataStream }),
+            createChartFromTabData: createChartFromTabData({ dataStream }),
             loadData,
-            cleanData,
-            filterData,
-            aggregateData,
             transformData,
             analyzeStats,
             exportProcessedData,
@@ -304,57 +267,16 @@ export async function POST(request: Request) {
             calculateStatistics,
             groupAndAggregate,
             sortData,
-            sumEntireColumn,
-            detectAndResolveDuplicates,
-            cleanDataForDashboard: cleanDataForDashboard({ dataStream }),
-            resolveDuplicatesForDashboard: resolveDuplicatesForDashboard({ dataStream }),
-            processDataForDashboard: processDataForDashboard({ dataStream }),
             loadOECDPatentData,
             cleanOECDPatentData,
             preparePatentDataForVisualization,
+            loadCsvFromUrl: createLoadCsvFromUrl({ dataStream }),
+            cleanData: createCleanData({ dataStream }),
+            detectAndResolveDuplicates: createDetectAndResolveDuplicates({ dataStream }),
+            aggregateData: createAggregateData({ dataStream }),
+            sumColumn,
           },
-          onStepFinish: ({ stepType, text, toolCalls, toolResults, usage, warnings }) => {
-            console.log('🔧 AI Step finished:', {
-              stepType,
-              textLength: text?.length || 0,
-              toolCallsCount: toolCalls?.length || 0,
-              toolResultsCount: toolResults?.length || 0,
-              usage,
-              warnings
-            });
-            
-            if (toolCalls && toolCalls.length > 0) {
-              console.log('🛠️ Tool calls in this step:', toolCalls.map(tc => ({
-                toolName: tc.toolName,
-                toolCallId: tc.toolCallId,
-                argsKeys: Object.keys(tc.args || {})
-              })));
-            }
-            
-            if (toolResults && toolResults.length > 0) {
-              console.log('🔧 Tool results in this step:', toolResults.map(tr => ({
-                toolCallId: tr.toolCallId,
-                resultType: typeof tr.result,
-                resultPreview: typeof tr.result === 'string' ? `${tr.result.slice(0, 100)}...` : `${JSON.stringify(tr.result).slice(0, 100)}...`
-              })));
-            }
-          },
-          onFinish: async ({ response, finishReason, usage, warnings, experimental_providerMetadata }) => {
-            console.log('🎯 onFinish callback triggered!');
-            console.log('🎯 Response messages count:', response?.messages?.length || 0);
-            console.log('🎯 Finish reason:', finishReason);
-            console.log('🎯 Usage stats:', usage);
-            console.log('🎯 Warnings:', warnings);
-            console.log('🎯 Provider metadata:', experimental_providerMetadata);
-            console.log('🎯 Response messages detail:', response?.messages?.map(msg => ({
-              role: msg.role,
-              contentType: typeof msg.content,
-              contentLength: typeof msg.content === 'string' ? msg.content.length : 'N/A',
-              messageId: msg.id,
-              hasExperimentalAttachments: !!(msg as any).experimental_attachments,
-              messageKeys: Object.keys(msg)
-            })));
-            
+          onFinish: async ({ response }) => {
             if (session.user?.id) {
               try {
                 const assistantId = getTrailingMessageId({
@@ -372,7 +294,6 @@ export async function POST(request: Request) {
                   responseMessages: response.messages,
                 });
 
-                console.log('💾 Saving assistant message to database...');
                 await saveMessages({
                   messages: [
                     {
@@ -386,9 +307,8 @@ export async function POST(request: Request) {
                     },
                   ],
                 });
-                console.log('✅ Assistant message saved successfully');
               } catch (error) {
-                console.error('❌ Failed to save chat response:', error);
+                console.error('Failed to save chat response:', error);
               }
             }
           },
@@ -398,39 +318,30 @@ export async function POST(request: Request) {
           },
         });
 
-        console.log('✅ streamText call completed, starting stream processing...');
-        
-        // Add detailed logging for stream events
         const originalConsumeStream = result.consumeStream.bind(result);
         result.consumeStream = () => {
-          console.log('📡 Starting to consume AI stream...');
           return originalConsumeStream();
         };
 
         result.consumeStream();
 
-        console.log('🔗 Merging AI stream into data stream...');
         result.mergeIntoDataStream(dataStream, {
           sendReasoning: true,
         });
       },
       onError: (error) => {
-        console.error('🚨 DataStream error occurred:', error);
+        console.error('DataStream error occurred:', error);
         return 'Oops, an error occurred!';
       },
     });
 
-    console.log('🌊 DataStream created successfully');
-
     const streamContext = getStreamContext();
 
     if (streamContext) {
-      console.log('🔄 Using resumable stream context with streamId:', streamId);
       return new Response(
         await streamContext.resumableStream(streamId, () => stream),
       );
     } else {
-      console.log('📡 Using direct stream response');
       return new Response(stream);
     }
   } catch (error) {
@@ -438,7 +349,6 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
-    // Handle any other errors
     return new ChatSDKError(
       'bad_request:database',
       'An unexpected error occurred',

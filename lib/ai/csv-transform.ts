@@ -9,6 +9,30 @@ export interface CsvFile {
   contentType: string;
 }
 
+// Track dashboard tabs for agent visibility
+export interface DashboardTabInfo {
+  title: string;
+  type: 'csv' | 'dashboard';
+  description?: string;
+}
+
+// Global state for dashboard tabs (this will be managed by the dashboard component)
+let dashboardTabs: DashboardTabInfo[] = [];
+
+/**
+ * Update dashboard tabs information (called by dashboard component)
+ */
+export function updateDashboardTabs(tabs: DashboardTabInfo[]) {
+  dashboardTabs = tabs;
+}
+
+/**
+ * Get current dashboard tabs
+ */
+export function getDashboardTabs(): DashboardTabInfo[] {
+  return dashboardTabs;
+}
+
 /**
  * Extract CSV files from the entire conversation history
  * Looks through all messages (both previous and current) to find CSV attachments
@@ -63,7 +87,7 @@ export function transformMessagesForAgent(messages: any[], csvFiles: CsvFile[]):
         csvContext += `📊 **${index + 1}. ${file.name}**\n`;
         csvContext += `   URL: ${file.url}\n\n`;
       });
-      csvContext += '💡 **Instructions:** Use the readCsvFile, filterCsvData, createInlineChart or createDocument with chart artifact tools with the URLs above.\n';
+      csvContext += '💡 **Instructions:** Use the loadCsvFromUrl, cleanDataAdvanced, detectAndResolveDuplicatesAdvanced, inferAndCastTypes, filterDataAdvanced, aggregateDataAdvanced, sumColumnAdvanced, createInlineChart or createDocument with chart artifact tools with the URLs above.\n';
       csvContext += '📝 **Important:** Always use the exact URLs provided when calling CSV tools.\n\n';
       csvContext += '---\n\n';
       
@@ -98,22 +122,40 @@ export function generateCsvSystemPrompt(csvFiles: CsvFile[]): string {
   csvFiles.forEach((file, index) => {
     csvSystemPrompt += `${index + 1}. "${file.name}" at URL: ${file.url}\n`;
   });
+
+  // Add dashboard tabs information if available
+  if (dashboardTabs.length > 0) {
+    csvSystemPrompt += `\n** AVAILABLE DASHBOARD TABS **\n`;
+    csvSystemPrompt += `Current tabs in the dashboard (use these exact names with createChartFromTabData):\n`;
+    dashboardTabs.forEach((tab, index) => {
+      const icon = tab.type === 'csv' ? '📊' : '📈';
+      csvSystemPrompt += `${icon} ${index + 1}. "${tab.title}" (${tab.type})\n`;
+    });
+    csvSystemPrompt += `\n`;
+  }
+
   csvSystemPrompt += `\nWhen the user asks about data analysis, charts, or working with data:\n
-  - ALWAYS start by using readCsvFile tool to understand the data structure\n
+  - ALWAYS start by using loadCsvFromUrl tool with BOTH the URL and the fileName parameter\n
+  - When calling loadCsvFromUrl, use: { url: "URL_HERE", fileName: "FILE_NAME_HERE" }\n
+  - This creates properly named CSV tabs using the actual file names\n
+  - Use cleanData tool to normalize formatting and fix encoding issues\n
   - IMMEDIATELY use detectAndResolveDuplicates tool if the data contains identifiers (names, IDs, etc.)\n
-   - Use the aggregated data from detectAndResolveDuplicates for all chart creation\n
-   - Use sumEntireColumn tool when you need column totals\n
-   - Use cleanDataForDashboard, resolveDuplicatesForDashboard, or processDataForDashboard to UPDATE the dashboard data tab\n
-   - Use createDashboardChart or createInlineChart tools for visualizations\n
-   - Use filterCsvData tool for data filtering\n
+   - This tool intelligently handles duplicates: either aggregates values OR creates unique names (Perch_1, Perch_2)\n
+   - Use the processed data from detectAndResolveDuplicates for all chart creation\n
+   - Use sumColumn tool when you need column totals with statistical insights\n
+   - Use filterData and aggregateData for sophisticated data processing\n
+   - Use createChartFromTabData to create charts from existing dashboard tabs (see available tabs above)\n
+   - Use createInlineChart tools for quick visualizations\n
   - NEVER ask the user to upload files - the files are already available\n
-  - NEVER REVEAL THE URLS TO THE USER - THEY ARE FOR INTERNAL USE ONLY\n
   - ALWAYS use the exact URLs provided above when calling CSV tools\n
+  - ALWAYS pass the fileName parameter to ensure proper tab naming\n
+  - When using createChartFromTabData, use the exact tab names listed above\n
   \n** CRITICAL DUPLICATE HANDLING **\n
   If you see duplicate warnings like "67% of Car_Name values are duplicates":\n
   1. Use detectAndResolveDuplicates tool with the identifier column\n
-  2. Use the aggregatedData result for all subsequent chart creation\n
-  3. This prevents chart errors and provides meaningful insights\n`;
+  2. Tool will either aggregate values OR create unique names (Perch_1, Perch_2) for better visualization\n
+  3. Use the processedData result for all subsequent chart creation\n
+  4. This prevents chart errors and provides clear, meaningful insights\n`;
 
   return csvSystemPrompt;
 }

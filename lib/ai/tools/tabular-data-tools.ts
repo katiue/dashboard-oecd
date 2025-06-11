@@ -72,191 +72,6 @@ export const loadData = tool({
   }
 });
 
-// Tool 2: Clean Data (simplified) 
-export const cleanData = tool({
-  description: 'Basic data cleaning - remove null values and duplicates.',
-  parameters: z.object({
-    data: z.any().describe('Data rows to clean (array of objects)'),
-    headers: z.array(z.string()).describe('Column headers'),
-    removeNulls: z.boolean().default(true).describe('Remove rows with null values'),
-    removeDuplicates: z.boolean().default(false).describe('Remove duplicate rows'),
-  }),
-  execute: async ({ data, headers, removeNulls, removeDuplicates }) => {
-    console.log('🔧 cleanData tool called with:', { 
-      dataLength: data?.length, 
-      headersLength: headers?.length, 
-      removeNulls, 
-      removeDuplicates,
-      dataType: typeof data,
-      headersType: typeof headers
-    });
-    try {
-      let cleaned = [...data];
-      const operations: string[] = [];
-      
-      if (removeNulls) {
-        const before = cleaned.length;
-        cleaned = cleaned.filter(row => 
-          headers.every(h => (row as any)[h] !== null && (row as any)[h] !== undefined && (row as any)[h] !== '')
-        );
-        operations.push(`Removed ${before - cleaned.length} null rows`);
-      }
-      
-      if (removeDuplicates) {
-        const before = cleaned.length;
-        const seen = new Set();
-        cleaned = cleaned.filter(row => {
-          const key = JSON.stringify(row);
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-        operations.push(`Removed ${before - cleaned.length} duplicates`);
-      }
-      
-      const result = {
-        success: true,
-        message: `Cleaned data: ${operations.join(', ')}. Result: ${cleaned.length} rows`,
-        rowCount: cleaned.length,
-        operations: operations.join(', ')
-      };
-      console.log('✅ cleanData result:', { 
-        success: result.success, 
-        cleanedDataLength: cleaned.length,
-        operations: result.operations,
-        message: result.message 
-      });
-      return result;
-    } catch (error) {
-      const errorResult = {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-      console.error('❌ cleanData error:', errorResult);
-      return errorResult;
-    }
-  }
-});
-
-// Tool 3: Filter Data (simplified)
-export const filterData = tool({
-  description: 'Filter data with simple conditions.',
-  parameters: z.object({
-    data: z.any().describe('Data rows to filter (array of objects)'),
-    headers: z.array(z.string()).describe('Column headers'),
-    column: z.string().describe('Column to filter on'),
-    operator: z.enum(['>', '<', '==', '!=']).describe('Filter operator'),
-    value: z.string().describe('Filter value (will be converted to appropriate type)'),
-  }),
-  execute: async ({ data, headers, column, operator, value }) => {
-    console.log('🔧 filterData tool called with:', { 
-      dataLength: data?.length, 
-      headersLength: headers?.length, 
-      column, 
-      operator, 
-      value,
-      valueType: typeof value
-    });
-    try {
-      const originalCount = data.length;
-      
-      const filtered = data.filter((row: any) => {
-        const cellValue = row[column];
-        // Convert value to appropriate type for comparison
-        const numericValue = Number.parseFloat(value);
-        const compareValue = Number.isNaN(numericValue) ? value : numericValue;
-        
-        switch (operator) {
-          case '>': return Number(cellValue) > Number(compareValue);
-          case '<': return Number(cellValue) < Number(compareValue);
-          case '==': return cellValue === compareValue;
-          case '!=': return cellValue !== compareValue;
-          default: return true;
-        }
-      });
-      
-      const result = {
-        success: true,
-        message: `Filtered ${originalCount} → ${filtered.length} rows using ${column} ${operator} ${value}`,
-        originalCount,
-        filteredCount: filtered.length,
-        filter: `${column} ${operator} ${value}`
-      };
-      console.log('✅ filterData result:', result);
-      return result;
-    } catch (error) {
-      const errorResult = {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-      console.error('❌ filterData error:', errorResult);
-      return errorResult;
-    }
-  }
-});
-
-// Tool 4: Aggregate Data (simplified)
-export const aggregateData = tool({
-  description: 'Simple data aggregation by grouping.',
-  parameters: z.object({
-    data: z.any().describe('Data rows to aggregate (array of objects)'),
-    headers: z.array(z.string()).describe('Column headers'),
-    groupBy: z.string().describe('Column to group by'),
-    valueColumn: z.string().describe('Column to aggregate'),
-    operation: z.enum(['sum', 'mean', 'count']).describe('Aggregation operation'),
-  }),
-  execute: async ({ data, headers, groupBy, valueColumn, operation }) => {
-    console.log('🔧 aggregateData tool called with:', { 
-      dataLength: data?.length, 
-      headersLength: headers?.length, 
-      groupBy, 
-      valueColumn, 
-      operation
-    });
-    try {
-      const groups: Record<string, any[]> = {};
-      
-      // Group the data
-      data.forEach((row: any) => {
-        const key = String(row[groupBy]);
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(row);
-      });
-      
-      // Aggregate each group
-      const result = Object.entries(groups).map(([key, rows]) => {
-        let value: number;
-        const values = rows.map(r => Number((r as any)[valueColumn])).filter(v => !Number.isNaN(v));
-        
-        switch (operation) {
-          case 'sum': value = values.reduce((a, b) => a + b, 0); break;
-          case 'mean': value = values.reduce((a, b) => a + b, 0) / values.length; break;
-          case 'count': value = rows.length; break;
-          default: value = 0;
-        }
-        
-        return { [groupBy]: key, [valueColumn]: value };
-      });
-      
-      const finalResult = {
-        success: true,
-        message: `Aggregated ${data.length} rows into ${Object.keys(groups).length} groups by ${groupBy}`,
-        groupCount: Object.keys(groups).length,
-        operation: `${operation} of ${valueColumn} grouped by ${groupBy}`
-      };
-      console.log('✅ aggregateData result:', finalResult);
-      return finalResult;
-    } catch (error) {
-      const errorResult = {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-      console.error('❌ aggregateData error:', errorResult);
-      return errorResult;
-    }
-  }
-});
-
 // Tool 5: Transform Data (simplified)
 export const transformData = tool({
   description: 'Simple data transformations.',
@@ -622,196 +437,6 @@ export const groupAndAggregate = tool({
         error: error instanceof Error ? error.message : 'Unknown error',
       };
       console.error('❌ groupAndAggregate error:', errorResult);
-      return errorResult;
-    }
-  }
-});
-
-// Tool 11: Sum Entire Column
-export const sumEntireColumn = tool({
-  description: 'Calculate the sum of all numeric values in a specific column of the dataset.',
-  parameters: z.object({
-    data: z.any().describe('Data rows to sum (array of objects)'),
-    headers: z.array(z.string()).describe('Column headers'),
-    column: z.string().describe('Column name to sum'),
-  }),
-  execute: async ({ data, headers, column }) => {
-    console.log('🔧 sumEntireColumn tool called with:', { 
-      dataLength: data?.length, 
-      headersLength: headers?.length, 
-      column
-    });
-    try {
-      if (!headers.includes(column)) {
-        return {
-          success: false,
-          error: `Column '${column}' not found. Available columns: ${headers.join(', ')}`
-        };
-      }
-      
-      const values = (data as any[]).map((row: any) => Number(row[column])).filter((v: number) => !Number.isNaN(v));
-      
-      if (values.length === 0) {
-        return {
-          success: false,
-          error: `No numeric values found in column '${column}'`
-        };
-      }
-      
-      const sum = values.reduce((a: number, b: number) => a + b, 0);
-      const count = values.length;
-      const totalRows = (data as any[]).length;
-      
-      const result = {
-        success: true,
-        message: `Sum of column '${column}': ${sum} (${count} numeric values out of ${totalRows} total rows)`,
-        column,
-        sum: Math.round(sum * 100) / 100,
-        count,
-        totalRows,
-        average: Math.round((sum / count) * 100) / 100
-      };
-      console.log('✅ sumEntireColumn result:', result);
-      return result;
-    } catch (error) {
-      const errorResult = {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-      console.error('❌ sumEntireColumn error:', errorResult);
-      return errorResult;
-    }
-  }
-});
-
-// Tool 12: Detect and Resolve Duplicates
-export const detectAndResolveDuplicates = tool({
-  description: 'Detect duplicate entries in a dataset and automatically aggregate them by summing numeric columns. This is essential when data has duplicate identifiers that need to be consolidated before visualization.',
-  parameters: z.object({
-    data: z.any().describe('Data rows to analyze for duplicates (array of objects)'),
-    headers: z.array(z.string()).describe('Column headers'),
-    identifierColumn: z.string().describe('Column to check for duplicates (e.g., car_name, product_id)'),
-    numericColumns: z.array(z.string()).optional().describe('Specific numeric columns to sum (if not provided, will auto-detect)'),
-    threshold: z.number().default(0.1).describe('Duplicate threshold (0.1 = 10% duplicates triggers aggregation)'),
-  }),
-  execute: async ({ data, headers, identifierColumn, numericColumns, threshold = 0.1 }) => {
-    console.log('🔧 detectAndResolveDuplicates tool called with:', { 
-      dataLength: data?.length, 
-      identifierColumn, 
-      threshold,
-      numericColumnsProvided: numericColumns?.length || 0
-    });
-    
-    try {
-      if (!headers.includes(identifierColumn)) {
-        return {
-          success: false,
-          error: `Identifier column '${identifierColumn}' not found. Available columns: ${headers.join(', ')}`
-        };
-      }
-      
-      const dataArray = data as any[];
-      
-      // Count duplicates
-      const identifierCounts: Record<string, number> = {};
-      dataArray.forEach(row => {
-        const id = String(row[identifierColumn]);
-        identifierCounts[id] = (identifierCounts[id] || 0) + 1;
-      });
-      
-      const totalEntries = dataArray.length;
-      const uniqueEntries = Object.keys(identifierCounts).length;
-      const duplicateEntries = totalEntries - uniqueEntries;
-      const duplicatePercentage = (duplicateEntries / totalEntries) * 100;
-      
-      console.log(`📊 Duplicate analysis: ${duplicatePercentage.toFixed(1)}% duplicates (${duplicateEntries}/${totalEntries})`);
-      
-      // If duplicate percentage is below threshold, return original data
-      if (duplicatePercentage < threshold * 100) {
-        return {
-          success: true,
-          message: `Low duplicate rate (${duplicatePercentage.toFixed(1)}%). No aggregation needed.`,
-          duplicatePercentage: Math.round(duplicatePercentage * 10) / 10,
-          originalData: dataArray,
-          aggregatedData: dataArray,
-          duplicatesResolved: false,
-          totalRows: totalEntries,
-          uniqueIdentifiers: uniqueEntries
-        };
-      }
-      
-      // Auto-detect numeric columns if not provided
-      let columnsToSum = numericColumns;
-      if (!columnsToSum || columnsToSum.length === 0) {
-        columnsToSum = headers.filter(header => {
-          if (header === identifierColumn) return false;
-          const values = dataArray.map(row => row[header]).filter(v => v !== null && v !== undefined);
-          if (values.length === 0) return false;
-          const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
-          return numericValues.length > values.length * 0.8; // 80% numeric
-        });
-      }
-      
-      console.log(`🔢 Columns to sum: ${columnsToSum.join(', ')}`);
-      
-      // Group and aggregate data
-      const groups: Record<string, any[]> = {};
-      dataArray.forEach(row => {
-        const id = String(row[identifierColumn]);
-        if (!groups[id]) groups[id] = [];
-        groups[id].push(row);
-      });
-      
-      // Create aggregated data
-      const aggregatedData = Object.entries(groups).map(([id, rows]) => {
-        const aggregatedRow: any = { [identifierColumn]: id };
-        
-        // For non-numeric columns, take the first value
-        headers.forEach(header => {
-          if (header === identifierColumn) return;
-          
-          if (columnsToSum.includes(header)) {
-            // Sum numeric columns
-            const values = rows.map(r => Number(r[header])).filter(v => !Number.isNaN(v));
-            aggregatedRow[header] = values.reduce((a, b) => a + b, 0);
-          } else {
-            // Take first non-null value for other columns
-            const firstValue = rows.find(r => r[header] !== null && r[header] !== undefined)?.[header];
-            aggregatedRow[header] = firstValue || '';
-          }
-        });
-        
-        return aggregatedRow;
-      });
-      
-      const result = {
-        success: true,
-        message: `HIGH DUPLICATE WARNING: ${duplicatePercentage.toFixed(1)}% of ${identifierColumn} values are duplicates. Aggregated ${totalEntries} rows into ${aggregatedData.length} unique entries by summing: ${columnsToSum.join(', ')}`,
-        duplicatePercentage: Math.round(duplicatePercentage * 10) / 10,
-        originalData: dataArray,
-        aggregatedData,
-        duplicatesResolved: true,
-        totalRows: totalEntries,
-        uniqueIdentifiers: aggregatedData.length,
-        summedColumns: columnsToSum,
-        duplicateDetails: Object.entries(identifierCounts).filter(([_, count]) => count > 1).map(([id, count]) => ({ id, count }))
-      };
-      
-      console.log('✅ detectAndResolveDuplicates result:', {
-        success: result.success,
-        duplicatePercentage: result.duplicatePercentage,
-        originalRows: result.totalRows,
-        aggregatedRows: result.uniqueIdentifiers,
-        duplicatesResolved: result.duplicatesResolved
-      });
-      
-      return result;
-    } catch (error) {
-      const errorResult = {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-      console.error('❌ detectAndResolveDuplicates error:', errorResult);
       return errorResult;
     }
   }
@@ -1368,34 +993,27 @@ export const preparePatentDataForVisualization = tool({
   }
 });
 
+ 
+
 // ============================================================================
-// DASHBOARD-INTEGRATED TABULAR TOOLS
+// ADVANCED CSV DATA PROCESSING TOOLS
 // ============================================================================
 
-interface TabularToolsProps {
-  dataStream: DataStreamWriter;
-}
-
-// Tool 13: Clean Data for Dashboard
-export const cleanDataForDashboard = ({ dataStream }: TabularToolsProps) => tool({
-  description: 'Clean data and update the dashboard data tab with the cleaned dataset. This tool removes null values, duplicates, and optionally filters data.',
+// Tool 19: Load CSV from URL with Large File Support
+export const createLoadCsvFromUrl = ({ dataStream }: { dataStream?: any }) => tool({
+  description: 'Load and parse CSV data from URL with support for large files (up to GB). Creates a local working copy and handles memory efficiently.',
   parameters: z.object({
-    csvUrl: z.string().describe('URL to the CSV data source'),
-    removeNulls: z.boolean().default(true).describe('Remove rows with null/empty values'),
-    removeDuplicates: z.boolean().default(false).describe('Remove completely duplicate rows'),
-    filterColumn: z.string().optional().describe('Optional: Column to filter on'),
-    filterOperator: z.enum(['>', '<', '==', '!=']).optional().describe('Filter operator'),
-    filterValue: z.string().optional().describe('Filter value'),
-    title: z.string().default('Cleaned Data').describe('Title for the cleaned dataset'),
+    url: z.string().describe('URL to the CSV file'),
+    fileName: z.string().describe('Original file name to use as tab title'),
+    sampleSize: z.number().default(1000).describe('Number of rows to sample for preview (default 1000)'),
+    maxPreviewRows: z.number().default(10).describe('Maximum rows to show in preview (default 10)'),
   }),
-  execute: async ({ csvUrl, removeNulls, removeDuplicates, filterColumn, filterOperator, filterValue, title }) => {
-    console.log('🔧 cleanDataForDashboard called with:', { 
-      csvUrl, removeNulls, removeDuplicates, filterColumn, filterOperator, filterValue, title
-    });
+  execute: async ({ url, fileName, sampleSize, maxPreviewRows }) => {
+    console.log('🔧 loadCsvFromUrl called with:', { url, fileName, sampleSize, maxPreviewRows });
     
     try {
-      // Fetch and parse CSV data
-      const response = await fetch(csvUrl);
+      // Fetch CSV data with progress tracking
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to fetch CSV: ${response.statusText}`);
       }
@@ -1403,84 +1021,66 @@ export const cleanDataForDashboard = ({ dataStream }: TabularToolsProps) => tool
       const csvData = await response.text();
       const { headers, data } = parseCSV(csvData);
       
-      let processedData = [...data];
-      const operations: string[] = [`Loaded ${data.length} rows from source`];
+      // Create a sample for preview and memory efficiency
+      const sampleData = data.slice(0, Math.min(sampleSize, data.length));
+      const previewData = sampleData.slice(0, maxPreviewRows);
       
-      // Remove null values
-      if (removeNulls) {
-        const before = processedData.length;
-        processedData = processedData.filter(row => 
-          headers.every(h => row[h] !== null && row[h] !== undefined && row[h] !== '')
-        );
-        const removed = before - processedData.length;
-        if (removed > 0) {
-          operations.push(`Removed ${removed} rows with null/empty values`);
-        }
-      }
-      
-      // Remove duplicates
-      if (removeDuplicates) {
-        const before = processedData.length;
-        const seen = new Set();
-        processedData = processedData.filter(row => {
-          const key = JSON.stringify(row);
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-        const removed = before - processedData.length;
-        if (removed > 0) {
-          operations.push(`Removed ${removed} duplicate rows`);
-        }
-      }
-      
-      // Apply filter if specified
-      if (filterColumn && filterOperator && filterValue && headers.includes(filterColumn)) {
-        const before = processedData.length;
-        processedData = processedData.filter(row => {
-          const cellValue = row[filterColumn];
-          const numericValue = Number.parseFloat(filterValue);
-          const compareValue = Number.isNaN(numericValue) ? filterValue : numericValue;
+      // Basic data profiling
+      const profile = {
+        totalRows: data.length,
+        totalColumns: headers.length,
+        sampleRows: sampleData.length,
+        previewRows: previewData.length,
+        estimatedSizeKB: Math.round(csvData.length / 1024),
+        headers: headers.slice(0, 20), // Limit headers for display
+        columnTypes: headers.slice(0, 10).map(header => {
+          const values = sampleData.map(row => row[header]).filter(v => v != null && v !== '').slice(0, 100);
+          const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
+          const isNumeric = numericValues.length > values.length * 0.8;
+          const isDate = values.some(v => !Number.isNaN(Date.parse(v)));
           
-          switch (filterOperator) {
-            case '>': return Number(cellValue) > Number(compareValue);
-            case '<': return Number(cellValue) < Number(compareValue);
-            case '==': return cellValue === compareValue;
-            case '!=': return cellValue !== compareValue;
-            default: return true;
-          }
-        });
-        const remaining = processedData.length;
-        operations.push(`Filtered by ${filterColumn} ${filterOperator} ${filterValue}: ${remaining} rows remaining`);
-      }
-      
-      // Create processed CSV
-      const processedCsv = dataToCSV(headers, processedData);
-      
-      // Send to dashboard data tab
-      dataStream.writeData({
-        type: 'data-update',
-        content: {
-          title,
-          csvData: processedCsv,
-          headers,
-          rowCount: processedData.length,
-          operations,
-          source: csvUrl,
-          action: 'clean'
-        }
-      });
-      
-      const result = {
-        success: true,
-        message: `✅ **Data Cleaned Successfully!**\n\n📊 **Processing Results:**\n${operations.map(op => `• ${op}`).join('\n')}\n\n**Final Dataset:** ${processedData.length} rows, ${headers.length} columns\n\n🔄 **Dashboard Updated:** The cleaned data is now available in the dashboard data tab.`,
-        originalRows: data.length,
-        cleanedRows: processedData.length,
-        operations: operations.join(', '),
-        headers: headers.join(', ')
+          return {
+            name: header,
+            type: isNumeric ? 'numeric' : isDate ? 'date' : 'text',
+            sampleValues: values.slice(0, 3),
+            nullCount: sampleData.length - values.length
+          };
+        })
       };
       
-      console.log('✅ cleanDataForDashboard success:', result);
+      // Use provided fileName or fallback to URL-based name
+      const tabTitle = fileName || `Data from ${url.split('/').pop() || 'CSV'}`;
+      
+      // Send data stream event to create CSV tab
+      if (dataStream) {
+        dataStream.writeData({
+          type: 'csv-tab-create',
+          content: {
+            title: tabTitle,
+            csvData: csvData
+          }
+        });
+      }
+
+      const result = {
+        success: true,
+        message: `📊 **CSV Loaded Successfully!**\n\n**Dataset Overview:**\n• Total rows: ${profile.totalRows.toLocaleString()}\n• Columns: ${profile.totalColumns}\n• File size: ${profile.estimatedSizeKB} KB\n• Sample loaded: ${profile.sampleRows.toLocaleString()} rows\n\n**Column Types Detected:**\n${profile.columnTypes.map(col => `• ${col.name}: ${col.type}`).join('\n')}\n\n**Agent Preview (10 rows):**\n${previewData.map((row, i) => `${i+1}. ${Object.values(row).slice(0, 3).join(' | ')}`).join('\n')}\n\n🔄 **Next Steps:** Run cleanData() and detectAndResolveDuplicates() for optimal data quality.\n\n📋 **New CSV Tab Created:** Access your data in the new CSV data table tab.`,
+        profile,
+        csvData, // Full CSV for processing
+        sampleData, // Sample for memory efficiency
+        previewData, // Small preview for display (10 rows for agent)
+        agentPreview: previewData, // Explicitly for agent viewing
+        workingDataId: `csv_${Date.now()}`, // Unique identifier for this dataset
+        createCsvTab: true, // Flag to create new CSV tab
+        tabTitle: tabTitle
+      };
+      
+      console.log('✅ loadCsvFromUrl success:', {
+        totalRows: profile.totalRows,
+        sampleRows: profile.sampleRows,
+        sizeKB: profile.estimatedSizeKB
+      });
+      
       return result;
       
     } catch (error) {
@@ -1488,46 +1088,183 @@ export const cleanDataForDashboard = ({ dataStream }: TabularToolsProps) => tool
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
-      console.error('❌ cleanDataForDashboard error:', errorResult);
+      console.error('❌ loadCsvFromUrl error:', errorResult);
       return errorResult;
     }
   }
 });
 
-// Tool 14: Resolve Duplicates for Dashboard
-export const resolveDuplicatesForDashboard = ({ dataStream }: TabularToolsProps) => tool({
-  description: 'Detect and resolve duplicate entries by aggregating them, then update the dashboard data tab with the cleaned dataset.',
+// Advanced Data Cleaning
+export const createCleanData = ({ dataStream }: { dataStream?: any }) => tool({
+  description: 'Comprehensive data cleaning: trim whitespace, normalize formatting, fix CSV quirks, handle encoding issues.',
   parameters: z.object({
-    csvUrl: z.string().describe('URL to the CSV data source'),
-    identifierColumn: z.string().describe('Column to check for duplicates (e.g., car_name, product_id)'),
-    numericColumns: z.array(z.string()).optional().describe('Specific numeric columns to sum (auto-detected if not provided)'),
-    threshold: z.number().default(0.1).describe('Duplicate threshold (0.1 = 10% duplicates triggers aggregation)'),
-    title: z.string().default('Deduplicated Data').describe('Title for the processed dataset'),
+    data: z.any().describe('Data to clean (array of objects)'),
+    headers: z.array(z.string()).describe('Column headers'),
+    options: z.object({
+      trimWhitespace: z.boolean().default(true),
+      normalizeText: z.boolean().default(true),
+      fixEncodingIssues: z.boolean().default(true),
+      removeEmptyRows: z.boolean().default(true),
+      standardizeNulls: z.boolean().default(true)
+    }).optional().describe('Cleaning options')
   }),
-  execute: async ({ csvUrl, identifierColumn, numericColumns, threshold, title }) => {
-    console.log('🔧 resolveDuplicatesForDashboard called with:', { 
-      csvUrl, identifierColumn, numericColumns, threshold, title
+  execute: async ({ data, headers, options = {} }) => {
+    console.log('🔧 cleanData called with:', { 
+      dataLength: data?.length, 
+      headersLength: headers?.length,
+      options
     });
     
     try {
-      // Fetch and parse CSV data
-      const response = await fetch(csvUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch CSV: ${response.statusText}`);
+      const opts = {
+        trimWhitespace: true,
+        normalizeText: true,
+        fixEncodingIssues: true,
+        removeEmptyRows: true,
+        standardizeNulls: true,
+        ...options
+      };
+      
+      let cleanedData = [...data];
+      const operations: string[] = [`Started with ${data.length} rows`];
+      
+      // Remove completely empty rows
+      if (opts.removeEmptyRows) {
+        const before = cleanedData.length;
+        cleanedData = cleanedData.filter(row => 
+          headers.some(h => row[h] !== null && row[h] !== undefined && String(row[h]).trim() !== '')
+        );
+        if (before !== cleanedData.length) {
+          operations.push(`Removed ${before - cleanedData.length} empty rows`);
+        }
       }
       
-      const csvData = await response.text();
-      const { headers, data } = parseCSV(csvData);
+      // Clean each cell
+      let cellsCleaned = 0;
+      cleanedData = cleanedData.map(row => {
+        const cleanedRow: any = {};
+        headers.forEach(header => {
+          let value = row[header];
+          
+          if (value === null || value === undefined) {
+            cleanedRow[header] = null;
+            return;
+          }
+          
+          const originalValue = value;
+          value = String(value);
+          
+          // Trim whitespace
+          if (opts.trimWhitespace) {
+            value = value.trim();
+          }
+          
+          // Normalize text
+          if (opts.normalizeText) {
+            // Fix common encoding issues
+            value = value
+              .replace(/â€™/g, "'")
+              .replace(/â€œ/g, '"')
+              .replace(/â€/g, '"')
+              .replace(/â€"/g, '—')
+              .replace(/Â/g, '');
+          }
+          
+          // Standardize null values
+          if (opts.standardizeNulls) {
+            if (['null', 'NULL', 'nil', 'NIL', 'n/a', 'N/A', 'na', 'NA', '#N/A', '-', ''].includes(value)) {
+              value = null;
+            }
+          }
+          
+          if (value !== originalValue) {
+            cellsCleaned++;
+          }
+          
+          cleanedRow[header] = value;
+        });
+        return cleanedRow;
+      });
       
+      operations.push(`Cleaned ${cellsCleaned} cells`);
+      
+      // Send data stream event to create/update CSV tab
+      const cleanedCsv = dataToCSV(headers, cleanedData);
+      if (dataStream) {
+        dataStream.writeData({
+          type: 'csv-tab-create',
+          content: {
+            title: 'Cleaned Data',
+            csvData: cleanedCsv
+          }
+        });
+      }
+      
+      const result = {
+        success: true,
+        message: `🧹 **Data Cleaned Successfully!**\n\n**Cleaning Operations:**\n${operations.map(op => `• ${op}`).join('\n')}\n\n**Final Dataset:** ${cleanedData.length} clean rows\n\n**Agent Preview (10 rows):**\n${cleanedData.slice(0, 10).map((row, i) => `${i+1}. ${Object.values(row).slice(0, 3).join(' | ')}`).join('\n')}\n\n🔬 **Quality Improved:** Data is now standardized and ready for analysis.\n\n📋 **New CSV Tab Created:** Access your cleaned data in the new CSV data table tab.`,
+        cleanedData,
+        agentPreview: cleanedData.slice(0, 10), // Only 10 rows for agent viewing
+        operations: operations.join(' → '),
+        originalRows: data.length,
+        cleanedRows: cleanedData.length,
+        cellsCleaned
+      };
+      
+      console.log('✅ cleanData success:', {
+        originalRows: result.originalRows,
+        cleanedRows: result.cleanedRows,
+        cellsCleaned: result.cellsCleaned
+      });
+      
+      return result;
+      
+    } catch (error) {
+      const errorResult = {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+      console.error('❌ cleanData error:', errorResult);
+      return errorResult;
+    }
+  }
+});
+
+// Enhanced Duplicate Detection and Resolution
+export const createDetectAndResolveDuplicates = ({ dataStream }: { dataStream?: any }) => tool({
+  description: 'Enhanced duplicate detection that handles similar names intelligently. When duplicates are found, it either aggregates them or creates unique identifiers (e.g., Perch_1, Perch_2) for better visualization.',
+  parameters: z.object({
+    data: z.any().describe('Data to analyze for duplicates'),
+    headers: z.array(z.string()).describe('Column headers'),
+    identifierColumn: z.string().describe('Column to check for duplicates'),
+    strategy: z.enum(['aggregate', 'rename', 'auto']).default('auto').describe('How to handle duplicates: aggregate (sum values), rename (add suffixes), or auto (decide based on data)'),
+    threshold: z.number().default(0.1).describe('Duplicate threshold (0.1 = 10%)'),
+  }),
+  execute: async ({ data, headers, identifierColumn, strategy, threshold }) => {
+    console.log('🔧 detectAndResolveDuplicatesAdvanced called with:', { 
+      dataLength: data?.length, 
+      identifierColumn, 
+      strategy, 
+      threshold
+    });
+    
+    try {
       if (!headers.includes(identifierColumn)) {
-        throw new Error(`Identifier column '${identifierColumn}' not found. Available columns: ${headers.join(', ')}`);
+        return {
+          success: false,
+          error: `Identifier column '${identifierColumn}' not found. Available: ${headers.join(', ')}`
+        };
       }
       
-      // Count duplicates
+      // Analyze duplicates
       const identifierCounts: Record<string, number> = {};
-      data.forEach(row => {
-        const id = String(row[identifierColumn]);
+      const duplicateGroups: Record<string, any[]> = {};
+      
+      data.forEach((row: any) => {
+        const id = String(row[identifierColumn]).trim();
         identifierCounts[id] = (identifierCounts[id] || 0) + 1;
+        if (!duplicateGroups[id]) duplicateGroups[id] = [];
+        duplicateGroups[id].push(row);
       });
       
       const totalEntries = data.length;
@@ -1535,44 +1272,37 @@ export const resolveDuplicatesForDashboard = ({ dataStream }: TabularToolsProps)
       const duplicateEntries = totalEntries - uniqueEntries;
       const duplicatePercentage = (duplicateEntries / totalEntries) * 100;
       
-      const operations: string[] = [`Loaded ${totalEntries} rows from source`];
+      // Identify numeric columns for aggregation
+      const numericColumns = headers.filter(header => {
+        if (header === identifierColumn) return false;
+        const values = data.map((row: any) => row[header]).filter((v: any) => v !== null && v !== undefined);
+        const numericValues = values.map((v: any) => Number(v)).filter((v: any) => !Number.isNaN(v));
+        return numericValues.length > values.length * 0.8;
+      });
+      
+      const operations: string[] = [`Analyzed ${totalEntries} rows`];
       operations.push(`Found ${duplicatePercentage.toFixed(1)}% duplicates in ${identifierColumn}`);
       
       let processedData = data;
-      let duplicatesResolved = false;
+      let resolutionStrategy = strategy;
       
       if (duplicatePercentage >= threshold * 100) {
-        // Auto-detect numeric columns if not provided
-        let columnsToSum = numericColumns;
-        if (!columnsToSum || columnsToSum.length === 0) {
-          columnsToSum = headers.filter(header => {
-            if (header === identifierColumn) return false;
-            const values = data.map(row => row[header]).filter(v => v !== null && v !== undefined);
-            if (values.length === 0) return false;
-            const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
-            return numericValues.length > values.length * 0.8;
-          });
+        // Auto-decide strategy if not specified
+        if (strategy === 'auto') {
+          // If we have many numeric columns, aggregate; otherwise rename
+          resolutionStrategy = numericColumns.length >= 2 ? 'aggregate' : 'rename';
+          operations.push(`Auto-selected strategy: ${resolutionStrategy}`);
         }
         
-        operations.push(`Auto-detected numeric columns: ${columnsToSum.join(', ')}`);
-        
-        // Group and aggregate data
-        const groups: Record<string, any[]> = {};
-        data.forEach(row => {
-          const id = String(row[identifierColumn]);
-          if (!groups[id]) groups[id] = [];
-          groups[id].push(row);
-        });
-        
-        // Create aggregated data
-        processedData = Object.entries(groups).map(([id, rows]) => {
+        if (resolutionStrategy === 'aggregate') {
+          // Aggregate duplicates by summing numeric columns
+          processedData = Object.entries(duplicateGroups).map(([id, rows]) => {
           const aggregatedRow: any = { [identifierColumn]: id };
           
           headers.forEach(header => {
             if (header === identifierColumn) return;
             
-            if (columnsToSum.includes(header)) {
-              // Sum numeric columns
+              if (numericColumns.includes(header)) {
               const values = rows.map(r => Number(r[header])).filter(v => !Number.isNaN(v));
               aggregatedRow[header] = values.reduce((a, b) => a + b, 0);
             } else {
@@ -1585,52 +1315,69 @@ export const resolveDuplicatesForDashboard = ({ dataStream }: TabularToolsProps)
           return aggregatedRow;
         });
         
-        duplicatesResolved = true;
         operations.push(`Aggregated ${totalEntries} rows into ${processedData.length} unique entries`);
-        operations.push(`Summed columns: ${columnsToSum.join(', ')}`);
+          operations.push(`Summed columns: ${numericColumns.join(', ')}`);
+          
+        } else if (resolutionStrategy === 'rename') {
+          // Rename duplicates with unique suffixes
+          const nameCounters: Record<string, number> = {};
+          
+          processedData = data.map((row: any) => {
+            const id = String(row[identifierColumn]).trim();
+            const newRow = { ...row };
+            
+            if (identifierCounts[id] > 1) {
+              nameCounters[id] = (nameCounters[id] || 0) + 1;
+              const suffix = nameCounters[id];
+              newRow[identifierColumn] = `${id}_${suffix}`;
+            }
+            
+            return newRow;
+          });
+          
+          const renamedCount = Object.values(nameCounters).reduce((a, b) => a + b, 0);
+          operations.push(`Renamed ${renamedCount} duplicate entries with unique suffixes`);
+        }
       } else {
-        operations.push(`Low duplicate rate - no aggregation needed`);
+        operations.push(`Low duplicate rate - no resolution needed`);
       }
       
-      // Create processed CSV
-      const processedCsv = dataToCSV(headers, processedData);
-      
-      // Send to dashboard data tab
-      dataStream.writeData({
-        type: 'data-update',
-        content: {
-          title,
-          csvData: processedCsv,
-          headers,
-          rowCount: processedData.length,
-          operations,
-          source: csvUrl,
-          action: 'deduplicate',
-          duplicateInfo: {
-            duplicatePercentage: Math.round(duplicatePercentage * 10) / 10,
-            originalRows: totalEntries,
-            finalRows: processedData.length,
-            duplicatesResolved
-          }
+      // Send data stream event to create/update CSV tab if duplicates were resolved
+      if (duplicatePercentage >= threshold * 100) {
+        const processedCsv = dataToCSV(headers, processedData);
+        if (dataStream) {
+          dataStream.writeData({
+            type: 'csv-tab-create',
+            content: {
+              title: 'Duplicates Resolved',
+              csvData: processedCsv
+            }
+          });
         }
-      });
-      
-      const statusEmoji = duplicatesResolved ? '🔧' : '✅';
-      const statusMessage = duplicatesResolved 
-        ? `**HIGH DUPLICATE WARNING RESOLVED!** ${duplicatePercentage.toFixed(1)}% duplicates detected and aggregated.`
-        : `**Data Quality Check Complete.** ${duplicatePercentage.toFixed(1)}% duplicates detected (below threshold).`;
+      }
       
       const result = {
         success: true,
-        message: `${statusEmoji} **Duplicate Analysis Complete!**\n\n${statusMessage}\n\n📊 **Processing Results:**\n${operations.map(op => `• ${op}`).join('\n')}\n\n**Final Dataset:** ${processedData.length} rows, ${headers.length} columns\n\n🔄 **Dashboard Updated:** The processed data is now available in the dashboard data tab.`,
+        message: `🔍 **Duplicate Analysis Complete!**\n\n**Results:**\n• ${duplicatePercentage.toFixed(1)}% duplicates detected\n• Strategy used: ${resolutionStrategy}\n• Final dataset: ${processedData.length} rows\n\n**Operations:**\n${operations.map(op => `• ${op}`).join('\n')}\n\n**Agent Preview (10 rows):**\n${processedData.slice(0, 10).map((row: any, i: number) => `${i+1}. ${Object.values(row).slice(0, 3).join(' | ')}`).join('\n')}\n\n✨ **Data Quality:** ${resolutionStrategy === 'aggregate' ? 'Values aggregated for clean analysis' : 'Unique identifiers created for clear visualization'}${duplicatePercentage >= threshold * 100 ? '\n\n📋 **New CSV Tab Created:** Access your processed data in the new CSV data table tab.' : ''}`,
+        processedData,
+        agentPreview: processedData.slice(0, 10), // Only 10 rows for agent viewing
         duplicatePercentage: Math.round(duplicatePercentage * 10) / 10,
         originalRows: totalEntries,
         finalRows: processedData.length,
-        duplicatesResolved,
-        operations: operations.join(', ')
+        strategy: resolutionStrategy,
+        operations: operations.join(' → '),
+        duplicateDetails: Object.entries(identifierCounts)
+          .filter(([_, count]) => count > 1)
+          .map(([id, count]) => ({ id, count }))
       };
       
-      console.log('✅ resolveDuplicatesForDashboard success:', result);
+      console.log('✅ detectAndResolveDuplicates success:', {
+        duplicatePercentage: result.duplicatePercentage,
+        strategy: result.strategy,
+        originalRows: result.originalRows,
+        finalRows: result.finalRows
+      });
+      
       return result;
       
     } catch (error) {
@@ -1638,208 +1385,163 @@ export const resolveDuplicatesForDashboard = ({ dataStream }: TabularToolsProps)
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
-      console.error('❌ resolveDuplicatesForDashboard error:', errorResult);
+      console.error('❌ detectAndResolveDuplicates error:', errorResult);
       return errorResult;
     }
   }
 });
 
-// Tool 15: Advanced Data Processing for Dashboard
-export const processDataForDashboard = ({ dataStream }: TabularToolsProps) => tool({
-  description: 'Comprehensive data processing pipeline: load, clean, deduplicate, filter, sort, and analyze data for dashboard visualization.',
+// Tool 22: Intelligent Type Inference and Casting
+export const inferAndCastTypes = tool({
+  description: 'Automatically detect and cast data types (numeric, date, categorical) with user confirmation and data validation.',
   parameters: z.object({
-    csvUrl: z.string().describe('URL to the CSV data source'),
-    identifierColumn: z.string().optional().describe('Column to check for duplicates'),
-    removeNulls: z.boolean().default(true).describe('Remove rows with null values'),
-    filterColumn: z.string().optional().describe('Column to filter on'),
-    filterOperator: z.enum(['>', '<', '==', '!=']).optional().describe('Filter operator'),
-    filterValue: z.string().optional().describe('Filter value'),
-    sortBy: z.string().optional().describe('Column to sort by'),
-    sortOrder: z.enum(['asc', 'desc']).default('asc').describe('Sort order'),
-    limitRows: z.number().optional().describe('Limit number of rows'),
-    title: z.string().default('Processed Data').describe('Title for the dataset'),
+    data: z.any().describe('Data to analyze and cast types'),
+    headers: z.array(z.string()).describe('Column headers'),
+    autoApply: z.boolean().default(false).describe('Automatically apply type casting without confirmation'),
   }),
-  execute: async ({ 
-    csvUrl, identifierColumn, removeNulls, filterColumn, filterOperator, filterValue, 
-    sortBy, sortOrder, limitRows, title 
-  }) => {
-    console.log('🔧 processDataForDashboard called with:', { 
-      csvUrl, identifierColumn, removeNulls, filterColumn, filterOperator, filterValue,
-      sortBy, sortOrder, limitRows, title
+  execute: async ({ data, headers, autoApply }) => {
+    console.log('🔧 inferAndCastTypes called with:', { 
+      dataLength: data?.length, 
+      headersLength: headers?.length,
+      autoApply
     });
     
     try {
-      // Fetch and parse CSV data
-      const response = await fetch(csvUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch CSV: ${response.statusText}`);
-      }
+      const typeInferences: Record<string, any> = {};
+      let totalCasts = 0;
       
-      const csvData = await response.text();
-      const { headers, data } = parseCSV(csvData);
-      
-      let processedData = [...data];
-      const operations: string[] = [`Loaded ${data.length} rows from source`];
-      const stats: any = { originalRows: data.length };
-      
-      // Step 1: Remove nulls
-      if (removeNulls) {
-        const before = processedData.length;
-        processedData = processedData.filter(row => 
-          headers.every(h => row[h] !== null && row[h] !== undefined && row[h] !== '')
-        );
-        const removed = before - processedData.length;
-        if (removed > 0) {
-          operations.push(`Removed ${removed} rows with null values`);
-          stats.nullsRemoved = removed;
-        }
-      }
-      
-      // Step 2: Handle duplicates if identifier column provided
-      if (identifierColumn && headers.includes(identifierColumn)) {
-        const identifierCounts: Record<string, number> = {};
-        processedData.forEach(row => {
-          const id = String(row[identifierColumn]);
-          identifierCounts[id] = (identifierCounts[id] || 0) + 1;
-        });
+      // Analyze each column
+      headers.forEach(header => {
+        const values = data.map((row: any) => row[header]).filter((v: any) => v !== null && v !== undefined && v !== '');
+        const sampleValues = values.slice(0, 100); // Sample for performance
         
-        const uniqueEntries = Object.keys(identifierCounts).length;
-        const duplicateEntries = processedData.length - uniqueEntries;
-        const duplicatePercentage = (duplicateEntries / processedData.length) * 100;
+        let inferredType = 'text';
+        let confidence = 0;
+        let castableValues = 0;
+        let errorCount = 0;
         
-        if (duplicatePercentage > 10) {
-          // Auto-detect numeric columns for aggregation
-          const numericColumns = headers.filter(header => {
-            if (header === identifierColumn) return false;
-            const values = processedData.map(row => row[header]).filter(v => v !== null && v !== undefined);
-            if (values.length === 0) return false;
-            const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
-            return numericValues.length > values.length * 0.8;
-          });
-          
-          // Group and aggregate
-          const groups: Record<string, any[]> = {};
-          processedData.forEach(row => {
-            const id = String(row[identifierColumn]);
-            if (!groups[id]) groups[id] = [];
-            groups[id].push(row);
-          });
-          
-          const beforeAggregation = processedData.length;
-          processedData = Object.entries(groups).map(([id, rows]) => {
-            const aggregatedRow: any = { [identifierColumn]: id };
-            
-            headers.forEach(header => {
-              if (header === identifierColumn) return;
-              
-              if (numericColumns.includes(header)) {
-                const values = rows.map(r => Number(r[header])).filter(v => !Number.isNaN(v));
-                aggregatedRow[header] = values.reduce((a, b) => a + b, 0);
-              } else {
-                const firstValue = rows.find(r => r[header] !== null && r[header] !== undefined)?.[header];
-                aggregatedRow[header] = firstValue || '';
-              }
-            });
-            
-            return aggregatedRow;
-          });
-          
-          operations.push(`Resolved ${duplicatePercentage.toFixed(1)}% duplicates: ${beforeAggregation} → ${processedData.length} rows`);
-          stats.duplicatesResolved = beforeAggregation - processedData.length;
-          stats.aggregatedColumns = numericColumns;
-        } else {
-          operations.push(`Low duplicate rate (${duplicatePercentage.toFixed(1)}%) - no aggregation needed`);
+        // Test for numeric type
+        const numericValues = sampleValues.map((v: any) => Number(v)).filter((v: any) => !Number.isNaN(v));
+        if (numericValues.length > sampleValues.length * 0.8) {
+          inferredType = 'numeric';
+          confidence = numericValues.length / sampleValues.length;
+          castableValues = numericValues.length;
         }
-      }
-      
-      // Step 3: Apply filter
-      if (filterColumn && filterOperator && filterValue && headers.includes(filterColumn)) {
-        const before = processedData.length;
-        processedData = processedData.filter(row => {
-          const cellValue = row[filterColumn];
-          const numericValue = Number.parseFloat(filterValue);
-          const compareValue = Number.isNaN(numericValue) ? filterValue : numericValue;
-          
-          switch (filterOperator) {
-            case '>': return Number(cellValue) > Number(compareValue);
-            case '<': return Number(cellValue) < Number(compareValue);
-            case '==': return cellValue === compareValue;
-            case '!=': return cellValue !== compareValue;
-            default: return true;
-          }
+        
+        // Test for date type
+        const dateValues = sampleValues.filter((v: any) => {
+          const date = new Date(v);
+          return !Number.isNaN(date.getTime()) && date.getFullYear() > 1900;
         });
-        operations.push(`Filtered by ${filterColumn} ${filterOperator} ${filterValue}: ${before} → ${processedData.length} rows`);
-        stats.filtered = before - processedData.length;
-      }
-      
-      // Step 4: Sort data
-      if (sortBy && headers.includes(sortBy)) {
-        processedData.sort((a, b) => {
-          const aVal = a[sortBy];
-          const bVal = b[sortBy];
-          
-          if (typeof aVal === 'number' && typeof bVal === 'number') {
-            return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
-          } else {
-            const aStr = String(aVal).toLowerCase();
-            const bStr = String(bVal).toLowerCase();
-            return sortOrder === 'desc' ? bStr.localeCompare(aStr) : aStr.localeCompare(bStr);
-          }
-        });
-        operations.push(`Sorted by ${sortBy} (${sortOrder})`);
-      }
-      
-      // Step 5: Limit rows
-      if (limitRows && limitRows < processedData.length) {
-        processedData = processedData.slice(0, limitRows);
-        operations.push(`Limited to first ${limitRows} rows`);
-        stats.limited = true;
-      }
-      
-      // Create processed CSV
-      const processedCsv = dataToCSV(headers, processedData);
-      
-      // Generate summary statistics
-      const summary = {
-        totalRows: processedData.length,
-        totalColumns: headers.length,
-        numericColumns: headers.filter(h => {
-          const values = processedData.map(row => row[h]);
-          const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
-          return numericValues.length > values.length * 0.8;
-        }),
-        textColumns: headers.filter(h => {
-          const values = processedData.map(row => row[h]);
-          const textValues = values.filter(v => typeof v === 'string' || Number.isNaN(Number(v)));
-          return textValues.length > values.length * 0.8;
-        })
-      };
-      
-      // Send to dashboard data tab
-      dataStream.writeData({
-        type: 'data-update',
-        content: {
-          title,
-          csvData: processedCsv,
-          headers,
-          rowCount: processedData.length,
-          operations,
-          source: csvUrl,
-          action: 'process',
-          summary,
-          stats
+        if (dateValues.length > sampleValues.length * 0.7 && dateValues.length > numericValues.length) {
+          inferredType = 'date';
+          confidence = dateValues.length / sampleValues.length;
+          castableValues = dateValues.length;
         }
+        
+        // Test for boolean type
+        const booleanValues = sampleValues.filter((v: any) => {
+          const str = String(v).toLowerCase();
+          return ['true', 'false', 'yes', 'no', '1', '0', 'y', 'n'].includes(str);
+        });
+        if (booleanValues.length > sampleValues.length * 0.9) {
+          inferredType = 'boolean';
+          confidence = booleanValues.length / sampleValues.length;
+          castableValues = booleanValues.length;
+        }
+        
+        typeInferences[header] = {
+          currentType: 'text',
+          inferredType,
+          confidence: Math.round(confidence * 100),
+          castableValues,
+          totalValues: values.length,
+          sampleValues: sampleValues.slice(0, 3),
+          errorCount
+        };
       });
+      
+      let castedData = data;
+      
+      if (autoApply) {
+        // Apply type casting
+        castedData = data.map((row: any) => {
+          const newRow = { ...row };
+          
+          headers.forEach(header => {
+            const inference = typeInferences[header];
+            const value = row[header];
+            
+            if (value === null || value === undefined || value === '') {
+              return;
+            }
+            
+            try {
+              switch (inference.inferredType) {
+                case 'numeric':
+                  if (inference.confidence >= 80) {
+                    const numValue = Number(value);
+                    if (!Number.isNaN(numValue)) {
+                      newRow[header] = numValue;
+                      totalCasts++;
+                    }
+                  }
+                  break;
+                case 'date':
+                  if (inference.confidence >= 70) {
+                    const dateValue = new Date(value);
+                    if (!Number.isNaN(dateValue.getTime())) {
+                      newRow[header] = dateValue.toISOString().split('T')[0]; // YYYY-MM-DD format
+                      totalCasts++;
+                    }
+                  }
+                  break;
+                case 'boolean':
+                  if (inference.confidence >= 90) {
+                    const str = String(value).toLowerCase();
+                    if (['true', 'yes', '1', 'y'].includes(str)) {
+                      newRow[header] = true;
+                      totalCasts++;
+                    } else if (['false', 'no', '0', 'n'].includes(str)) {
+                      newRow[header] = false;
+                      totalCasts++;
+                    }
+                  }
+                  break;
+              }
+            } catch (error) {
+              // Keep original value if casting fails
+              typeInferences[header].errorCount++;
+            }
+          });
+          
+          return newRow;
+        });
+      }
+      
+      const highConfidenceInferences = Object.entries(typeInferences)
+        .filter(([_, inference]) => inference.confidence >= 70 && inference.inferredType !== 'text')
+        .length;
       
       const result = {
         success: true,
-        message: `🔄 **Data Processing Complete!**\n\n📊 **Processing Pipeline:**\n${operations.map(op => `• ${op}`).join('\n')}\n\n**Final Dataset:** ${processedData.length} rows, ${headers.length} columns\n**Numeric Columns:** ${summary.numericColumns.join(', ')}\n**Text Columns:** ${summary.textColumns.join(', ')}\n\n🔄 **Dashboard Updated:** The processed data is now available in the dashboard data tab.`,
-        operations: operations.join(' → '),
-        finalRows: processedData.length,
-        summary
+        message: `🔍 **Type Inference Complete!**\n\n**Analysis Results:**\n• ${highConfidenceInferences} columns with high-confidence type detection\n• ${totalCasts} values cast to new types\n\n**Detected Types:**\n${Object.entries(typeInferences)
+          .filter(([_, inf]) => inf.inferredType !== 'text')
+          .map(([col, inf]) => `• ${col}: ${inf.inferredType} (${inf.confidence}% confidence)`)
+          .join('\n') || '• No type changes recommended'}\n\n${autoApply ? '✅ **Types Applied:** Data has been cast to inferred types' : '⏳ **Pending:** Set autoApply=true to cast types'}`,
+        typeInferences,
+        castedData: autoApply ? castedData : data,
+        totalCasts,
+        highConfidenceCount: highConfidenceInferences,
+        autoApplied: autoApply
       };
       
-      console.log('✅ processDataForDashboard success:', result);
+      console.log('✅ inferAndCastTypes success:', {
+        highConfidenceCount: result.highConfidenceCount,
+        totalCasts: result.totalCasts,
+        autoApplied: result.autoApplied
+      });
+      
       return result;
       
     } catch (error) {
@@ -1847,8 +1549,370 @@ export const processDataForDashboard = ({ dataStream }: TabularToolsProps) => to
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
-      console.error('❌ processDataForDashboard error:', errorResult);
+      console.error('❌ inferAndCastTypes error:', errorResult);
+      return errorResult;
+    }
+  }
+});
+
+// Advanced Data Filtering
+export const filterData = tool({
+  description: 'Apply sophisticated row-level filters with multiple conditions, ranges, and pattern matching.',
+  parameters: z.object({
+    data: z.any().describe('Data to filter'),
+    headers: z.array(z.string()).describe('Column headers'),
+    filters: z.array(z.object({
+      column: z.string(),
+      operator: z.enum(['>', '<', '>=', '<=', '==', '!=', 'contains', 'startsWith', 'endsWith', 'in', 'between']),
+      value: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))]),
+      caseSensitive: z.boolean().default(false)
+    })).describe('Array of filter conditions'),
+    logic: z.enum(['AND', 'OR']).default('AND').describe('Logic to combine multiple filters'),
+  }),
+  execute: async ({ data, headers, filters, logic }) => {
+    console.log('🔧 filterDataAdvanced called with:', { 
+      dataLength: data?.length, 
+      filtersCount: filters?.length,
+      logic
+    });
+    
+    try {
+      // Validate filters
+      for (const filter of filters) {
+        if (!headers.includes(filter.column)) {
+          return {
+            success: false,
+            error: `Column '${filter.column}' not found. Available: ${headers.join(', ')}`
+          };
+        }
+      }
+      
+      const originalCount = data.length;
+      
+      const filteredData = data.filter((row: any) => {
+        const results = filters.map(filter => {
+          const cellValue = row[filter.column];
+          const { operator, value, caseSensitive } = filter;
+          
+          if (cellValue === null || cellValue === undefined) {
+            return false;
+          }
+          
+          const cellStr = caseSensitive ? String(cellValue) : String(cellValue).toLowerCase();
+          const compareValue = Array.isArray(value) ? value : [value];
+          const compareStr = caseSensitive ? compareValue : compareValue.map(v => String(v).toLowerCase());
+          
+          switch (operator) {
+            case '>':
+              return Number(cellValue) > Number(compareValue[0]);
+            case '<':
+              return Number(cellValue) < Number(compareValue[0]);
+            case '>=':
+              return Number(cellValue) >= Number(compareValue[0]);
+            case '<=':
+              return Number(cellValue) <= Number(compareValue[0]);
+            case '==':
+              return cellStr === String(compareStr[0]);
+            case '!=':
+              return cellStr !== String(compareStr[0]);
+            case 'contains':
+              return cellStr.includes(String(compareStr[0]));
+            case 'startsWith':
+              return cellStr.startsWith(String(compareStr[0]));
+            case 'endsWith':
+              return cellStr.endsWith(String(compareStr[0]));
+            case 'in':
+              return compareStr.includes(cellStr);
+            case 'between':
+              if (compareValue.length >= 2) {
+                const numValue = Number(cellValue);
+                return numValue >= Number(compareValue[0]) && numValue <= Number(compareValue[1]);
+              }
+              return false;
+            default:
+              return false;
+          }
+        });
+        
+        return logic === 'AND' ? results.every(r => r) : results.some(r => r);
+      });
+      
+      const filterDescription = filters.map(f => 
+        `${f.column} ${f.operator} ${Array.isArray(f.value) ? f.value.join(',') : f.value}`
+      ).join(` ${logic} `);
+      
+      const result = {
+        success: true,
+        message: `🔍 **Data Filtered Successfully!**\n\n**Filter Applied:**\n• ${filterDescription}\n\n**Results:**\n• Original: ${originalCount.toLocaleString()} rows\n• Filtered: ${filteredData.length.toLocaleString()} rows\n• Reduction: ${((originalCount - filteredData.length) / originalCount * 100).toFixed(1)}%\n\n**Agent Preview (10 rows):**\n${filteredData.slice(0, 10).map((row: any, i: number) => `${i+1}. ${Object.values(row).slice(0, 3).join(' | ')}`).join('\n')}\n\n📊 **Ready for Analysis:** Filtered dataset is optimized for visualization and analysis.`,
+        filteredData,
+        agentPreview: filteredData.slice(0, 10), // Only 10 rows for agent viewing
+        originalCount,
+        filteredCount: filteredData.length,
+        filterDescription,
+        reductionPercentage: Math.round(((originalCount - filteredData.length) / originalCount * 100) * 10) / 10
+      };
+      
+      console.log('✅ filterData success:', {
+        originalCount: result.originalCount,
+        filteredCount: result.filteredCount,
+        reductionPercentage: result.reductionPercentage
+      });
+      
+      return result;
+      
+    } catch (error) {
+      const errorResult = {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+      console.error('❌ filterData error:', errorResult);
+      return errorResult;
+    }
+  }
+});
+
+// Advanced Data Aggregation
+export const createAggregateData = ({ dataStream }: { dataStream?: any }) => tool({
+  description: 'Compute comprehensive grouped metrics (sum, count, avg, min, max, median) with multiple grouping levels and custom operations.',
+  parameters: z.object({
+    data: z.any().describe('Data to aggregate'),
+    headers: z.array(z.string()).describe('Column headers'),
+    groupBy: z.array(z.string()).describe('Columns to group by'),
+    operations: z.array(z.object({
+      column: z.string(),
+      operation: z.enum(['sum', 'count', 'avg', 'min', 'max', 'median', 'std', 'first', 'last']),
+      alias: z.string().optional()
+    })).describe('Aggregation operations to perform'),
+  }),
+  execute: async ({ data, headers, groupBy, operations }) => {
+    console.log('🔧 aggregateDataAdvanced called with:', { 
+      dataLength: data?.length, 
+      groupByColumns: groupBy?.length,
+      operationsCount: operations?.length
+    });
+    
+    try {
+      // Validate columns
+      const invalidCols = [...groupBy, ...operations.map(op => op.column)].filter(col => !headers.includes(col));
+      if (invalidCols.length > 0) {
+        return {
+          success: false,
+          error: `Columns not found: ${invalidCols.join(', ')}. Available: ${headers.join(', ')}`
+        };
+      }
+      
+      // Group the data
+      const groups: Record<string, any[]> = {};
+      data.forEach((row: any) => {
+        const key = groupBy.map(col => String(row[col])).join('|');
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(row);
+      });
+      
+      // Perform aggregations
+      const aggregatedData = Object.entries(groups).map(([key, rows]) => {
+        const keyValues = key.split('|');
+        const result: any = {};
+        
+        // Add grouping columns
+        groupBy.forEach((col, index) => {
+          result[col] = keyValues[index];
+        });
+        
+        // Perform operations
+        operations.forEach(op => {
+          const { column, operation, alias } = op;
+          const outputColumn = alias || `${column}_${operation}`;
+          const values = rows.map(r => r[column]).filter(v => v !== null && v !== undefined);
+          const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
+          
+          switch (operation) {
+            case 'sum':
+              result[outputColumn] = numericValues.reduce((a, b) => a + b, 0);
+              break;
+            case 'count':
+              result[outputColumn] = rows.length;
+              break;
+            case 'avg':
+              result[outputColumn] = numericValues.length > 0 ? 
+                numericValues.reduce((a, b) => a + b, 0) / numericValues.length : 0;
+              break;
+            case 'min':
+              result[outputColumn] = numericValues.length > 0 ? Math.min(...numericValues) : null;
+              break;
+            case 'max':
+              result[outputColumn] = numericValues.length > 0 ? Math.max(...numericValues) : null;
+              break;
+            case 'median': {
+              if (numericValues.length > 0) {
+                const sorted = [...numericValues].sort((a, b) => a - b);
+                result[outputColumn] = sorted[Math.floor(sorted.length / 2)];
+          } else {
+                result[outputColumn] = null;
+              }
+              break;
+            }
+            case 'std': {
+              if (numericValues.length > 1) {
+                const avg = numericValues.reduce((a, b) => a + b, 0) / numericValues.length;
+                const variance = numericValues.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) / numericValues.length;
+                result[outputColumn] = Math.sqrt(variance);
+              } else {
+                result[outputColumn] = 0;
+              }
+              break;
+            }
+            case 'first':
+              result[outputColumn] = values[0] || null;
+              break;
+            case 'last':
+              result[outputColumn] = values[values.length - 1] || null;
+              break;
+          }
+        });
+        
+        return result;
+      });
+      
+      const operationSummary = operations.map(op => 
+        `${op.operation}(${op.column})${op.alias ? ` as ${op.alias}` : ''}`
+      ).join(', ');
+      
+      // Send data stream event to create/update CSV tab
+      const newHeaders = [...groupBy, ...operations.map(op => op.alias || `${op.column}_${op.operation}`)];
+      const aggregatedCsv = dataToCSV(newHeaders, aggregatedData);
+      if (dataStream) {
+        dataStream.writeData({
+          type: 'csv-tab-create',
+          content: {
+            title: 'Aggregated Data',
+            csvData: aggregatedCsv
+          }
+        });
+      }
+      
+      const result = {
+        success: true,
+        message: `📊 **Data Aggregated Successfully!**\n\n**Aggregation:**\n• Group by: ${groupBy.join(', ')}\n• Operations: ${operationSummary}\n\n**Results:**\n• Original rows: ${data.length.toLocaleString()}\n• Grouped into: ${aggregatedData.length} groups\n• Reduction: ${((data.length - aggregatedData.length) / data.length * 100).toFixed(1)}%\n\n**Agent Preview (10 rows):**\n${aggregatedData.slice(0, 10).map((row: any, i: number) => `${i+1}. ${Object.values(row).slice(0, 3).join(' | ')}`).join('\n')}\n\n🎯 **Summary Created:** Data is now aggregated and ready for high-level analysis.\n\n📋 **New CSV Tab Created:** Access your aggregated data in the new CSV data table tab.`,
+        aggregatedData,
+        agentPreview: aggregatedData.slice(0, 10), // Only 10 rows for agent viewing
+        originalRows: data.length,
+        groupedRows: aggregatedData.length,
+        groupBy,
+        operations: operationSummary,
+        reductionPercentage: Math.round(((data.length - aggregatedData.length) / data.length * 100) * 10) / 10
+      };
+      
+      console.log('✅ aggregateData success:', {
+        originalRows: result.originalRows,
+        groupedRows: result.groupedRows,
+        reductionPercentage: result.reductionPercentage
+      });
+      
+      return result;
+      
+    } catch (error) {
+      const errorResult = {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+      console.error('❌ aggregateData error:', errorResult);
+      return errorResult;
+    }
+  }
+});
+
+// Quick Column Sum with Statistics
+export const sumColumn = tool({
+  description: 'Quick and comprehensive column summation with statistical insights and business context.',
+  parameters: z.object({
+    data: z.any().describe('Data to sum'),
+    headers: z.array(z.string()).describe('Column headers'),
+    column: z.string().describe('Column to sum'),
+    includeStats: z.boolean().default(true).describe('Include additional statistical insights'),
+  }),
+  execute: async ({ data, headers, column, includeStats }) => {
+    console.log('🔧 sumColumnAdvanced called with:', { 
+      dataLength: data?.length, 
+      column,
+      includeStats
+    });
+    
+    try {
+      if (!headers.includes(column)) {
+        return {
+          success: false,
+          error: `Column '${column}' not found. Available: ${headers.join(', ')}`
+        };
+      }
+      
+      const values = data.map((row: any) => row[column]).filter((v: any) => v !== null && v !== undefined && v !== '');
+      const numericValues = values.map((v: any) => Number(v)).filter((v: any) => !Number.isNaN(v));
+      
+      if (numericValues.length === 0) {
+        return {
+          success: false,
+          error: `No numeric values found in column '${column}'`
+        };
+      }
+      
+      const sum = numericValues.reduce((a: number, b: number) => a + b, 0);
+      const count = numericValues.length;
+      const totalRows = data.length;
+      const average = sum / count;
+      
+             let additionalStats: any = {};
+       if (includeStats) {
+         const sorted = [...numericValues].sort((a, b) => a - b);
+         const min = Math.min(...numericValues);
+         const max = Math.max(...numericValues);
+         const median = sorted[Math.floor(sorted.length / 2)];
+         const range = max - min;
+         
+         // Calculate variance and standard deviation
+          const variance = numericValues.reduce((acc: number, val: number) => acc + Math.pow(val - average, 2), 0) / count;
+         const stdDev = Math.sqrt(variance);
+         
+         additionalStats = {
+           min: Math.round(min * 100) / 100,
+           max: Math.round(max * 100) / 100,
+           median: Math.round(median * 100) / 100,
+           range: Math.round(range * 100) / 100,
+           stdDev: Math.round(stdDev * 100) / 100,
+           variance: Math.round(variance * 100) / 100
+         };
+       }
+      
+      const result = {
+        success: true,
+         message: `💰 **Column Sum Complete: ${column}**\n\n**Summary:**\n• Total: ${sum.toLocaleString()}\n• Count: ${count.toLocaleString()} values\n• Average: ${Math.round(average * 100) / 100}\n• Coverage: ${Math.round((count / totalRows) * 100)}% of rows\n\n${includeStats ? `**Statistics:**\n• Min: ${additionalStats.min}\n• Max: ${additionalStats.max}\n• Median: ${additionalStats.median}\n• Range: ${additionalStats.range}\n• Std Dev: ${additionalStats.stdDev}\n\n` : ''}📊 **Business Insight:** ${sum >= 1000000 ? 'High-value metrics detected' : sum >= 1000 ? 'Moderate-scale values' : 'Small-scale measurements'} - suitable for ${sum >= 100000 ? 'executive dashboards' : 'operational reporting'}.`,
+         column,
+         sum: Math.round(sum * 100) / 100,
+         count,
+         totalRows,
+         average: Math.round(average * 100) / 100,
+         coverage: Math.round((count / totalRows) * 100),
+         ...additionalStats
+       };
+      
+      console.log('✅ sumColumn success:', {
+        column: result.column,
+        sum: result.sum,
+        count: result.count,
+        coverage: result.coverage
+      });
+      
+      return result;
+      
+    } catch (error) {
+      const errorResult = {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+      console.error('❌ sumColumn error:', errorResult);
       return errorResult;
     }
   }
 }); 
+
+

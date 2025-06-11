@@ -210,43 +210,11 @@ export function DataDashboard({ csvData: initialCsvData, initialCharts }: DataDa
     setExpandedChart((prev) => (prev === chartId ? null : chartId))
   }
 
-  // Export chart as PNG
-  const exportChart = async (chartId: string) => {
-    const chartElement = document.querySelector(`[data-chart-id="${chartId}"]`)
-    if (chartElement) {
-      try {
-        // This would require additional setup for actual image export
-        toast.success(`Chart ${chartId} export functionality would be implemented here`)
-      } catch (error) {
-        toast.error("Export failed")
-      }
-    }
-  }
-
   if (!csvData) {
     return (
       <div className="p-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Data Visualization Dashboard</h2>
-        <div className="text-muted-foreground mb-4">Upload CSV data to begin creating visualizations</div>
-        <Card className="border-2 border-dashed border-gray-300 rounded-lg p-8">
-          <CardContent>
-            <Input
-              type="file"
-              accept=".csv"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) {
-                  const reader = new FileReader()
-                  reader.onload = (event) => {
-                    const csv = event.target?.result as string
-                    setCsvData(csv)
-                  }
-                  reader.readAsText(file)
-                }
-              }}
-            />
-          </CardContent>
-        </Card>
+        <div className="text-muted-foreground mb-4">No data available</div>
       </div>
     )
   }
@@ -281,6 +249,8 @@ export function DataDashboard({ csvData: initialCsvData, initialCharts }: DataDa
           <Badge variant="secondary">{parsedData.headers.length} columns</Badge>
         </div>
       </div>
+
+      {/* Note: Data Processing Tools are now available in CSV tabs only */}
 
       {/* Charts Grid */}
       {processedChartsData.length > 0 ? (
@@ -320,10 +290,27 @@ export function DataDashboard({ csvData: initialCsvData, initialCharts }: DataDa
           ))}
         </div>
       ) : (
-        <div className="text-center py-8">
+        <div className="text-center py-8 space-y-4">
           <div className="text-muted-foreground">
-            No charts available. Use the createDashboardChart tool to add visualizations.
+            No charts available for this data yet.
           </div>
+          {csvData && (
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                📊 Ready to create visualizations from your {parsedData.data.length.toLocaleString()} rows of data
+              </div>
+              <div className="text-xs text-muted-foreground bg-muted/50 rounded p-3 max-w-md mx-auto">
+                💬 In chat, use: <br/>
+                <code className="text-xs bg-background px-1 rounded">
+                  "Create charts for this data"
+                </code> <br/>
+                or <br/>
+                <code className="text-xs bg-background px-1 rounded">
+                  "createDashboardChart"
+                </code>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -364,7 +351,7 @@ function FullScreenChartView({
         </div>
 
         {/* Main Content Area - Split Layout with Scrolling */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-auto">
           {/* Chart Area - Left Side */}
           <div className="flex-1 p-6 overflow-y-auto">
             <div className="min-h-full" data-chart-id={`fullscreen-${chart.id}`}>
@@ -416,7 +403,7 @@ function FullScreenChartView({
           </div>
 
           {/* Right Side Panel - Configuration and Data */}
-          <div className="w-80 border-l bg-muted overflow-hidden flex flex-col">
+          <div className="w-80 border-l bg-muted overflow-auto flex flex-col">
             {/* Panel Tabs */}
             <Tabs
               value={activePanel}
@@ -429,13 +416,13 @@ function FullScreenChartView({
               </TabsList>
 
               {/* Panel Content */}
-              <TabsContent value="config" className="flex-1 overflow-hidden">
+              <TabsContent value="config" className="flex-1 overflow-auto">
                 <ScrollArea className="h-full p-4">
                   <ChartConfigPanel chart={chart} onChange={onConfigChange} />
                 </ScrollArea>
               </TabsContent>
 
-              <TabsContent value="data" className="flex-1 overflow-hidden">
+              <TabsContent value="data" className="flex-1 overflow-auto">
                 <ScrollArea className="h-full p-4">
                   <CsvDataPanel chart={chart} />
                 </ScrollArea>

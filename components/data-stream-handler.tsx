@@ -2,10 +2,9 @@
 
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useRef } from 'react';
-import { artifactDefinitions, type ArtifactKind } from './artifact';
-import type { Suggestion } from '@/lib/db/schema';
+import { artifactDefinitions, ArtifactKind } from './artifact';
+import { Suggestion } from '@/lib/db/schema';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
-import { useDashboard } from '@/hooks/use-dashboard';
 
 export type DataStreamDelta = {
   type:
@@ -21,14 +20,19 @@ export type DataStreamDelta = {
     | 'finish'
     | 'kind'
     | 'dashboard-chart'
-    | 'create-dashboard-chart';
+    | 'csv-tab-create'
+    | 'csv-tab-update'
+    | 'create-chart-from-tab';
   content: string | Suggestion | any;
 };
 
-export function DataStreamHandler({ id }: { id: string }) {
+interface DataStreamHandlerProps {
+  id: string;
+}
+
+export function DataStreamHandler({ id }: DataStreamHandlerProps) {
   const { data: dataStream } = useChat({ id });
   const { artifact, setArtifact, setMetadata } = useArtifact();
-  const { addChartToDashboard } = useDashboard();
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
@@ -38,12 +42,60 @@ export function DataStreamHandler({ id }: { id: string }) {
     lastProcessedIndex.current = dataStream.length - 1;
 
     (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
+      // Handle create-chart-from-tab events
+      if (delta.type === 'create-chart-from-tab' && delta.content) {
+        // Dispatch a custom event that the dashboard will listen for
+        const event = new CustomEvent('dashboardCsvTabEvent', {
+          detail: {
+            type: 'create-chart-from-tab',
+            content: delta.content
+          }
+        });
+        window.dispatchEvent(event);
+        return;
+      }
+
+      // Handle CSV tab creation events
+      if (delta.type === 'csv-tab-create' && delta.content) {
+        // Dispatch a custom event that the dashboard will listen for
+        const event = new CustomEvent('dashboardCsvTabEvent', {
+          detail: {
+            type: 'csv-tab-create',
+            title: delta.content.title || 'New Data',
+            csvData: delta.content.csvData || '',
+            sourceTabId: delta.content.sourceTabId
+          }
+        });
+        window.dispatchEvent(event);
+        return;
+      }
+
+      // Handle CSV tab update events
+      if (delta.type === 'csv-tab-update' && delta.content) {
+        // Dispatch a custom event that the dashboard will listen for
+        const event = new CustomEvent('dashboardCsvTabEvent', {
+          detail: {
+            type: 'csv-tab-update',
+            tabId: delta.content.tabId,
+            title: delta.content.title,
+            csvData: delta.content.csvData || ''
+          }
+        });
+        window.dispatchEvent(event);
+        return;
+      }
+
       // Handle dashboard-chart events
       if (delta.type === 'dashboard-chart' && delta.content) {
-        const { chart, csvData, action } = delta.content;
-        if (action === 'add' && chart) {
-          addChartToDashboard(chart, csvData);
-        }
+        console.log('DataStreamHandler: Processing dashboard-chart event', delta.content);
+        // Dispatch a custom event that the dashboard will listen for
+        const event = new CustomEvent('dashboardCsvTabEvent', {
+          detail: {
+            type: 'dashboard-chart',
+            content: delta.content
+          }
+        });
+        window.dispatchEvent(event);
         return;
       }
 
@@ -104,7 +156,7 @@ export function DataStreamHandler({ id }: { id: string }) {
         }
       });
     });
-  }, [dataStream, setArtifact, setMetadata, artifact, addChartToDashboard]);
+  }, [dataStream, setArtifact, setMetadata, artifact]);
 
   return null;
 }

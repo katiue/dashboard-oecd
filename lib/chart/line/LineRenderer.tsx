@@ -66,21 +66,7 @@ export const LineRenderer: React.FC<LineRendererProps> = ({
     })
   }));
 
-  // Prepare xScale configuration
   const xScale = config.xScale || { type: 'point' };
-  
-  // Add debug logging for troubleshooting
-  if (process.env.NODE_ENV === 'development') {
-    console.log('LineRenderer Debug:', {
-      xScaleType: xScale.type,
-      sampleXValues: processedData[0]?.data?.slice(0, 3).map((p: any) => ({ 
-        value: p.x, 
-        type: typeof p.x, 
-        isDate: p.x instanceof Date 
-      })),
-      originalData: data[0]?.data?.slice(0, 3),
-    });
-  }
 
   return (
     <ResponsiveLine
