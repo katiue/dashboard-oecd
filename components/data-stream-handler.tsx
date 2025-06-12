@@ -19,10 +19,7 @@ export type DataStreamDelta = {
     | 'clear'
     | 'finish'
     | 'kind'
-    | 'dashboard-chart'
-    | 'csv-tab-create'
-    | 'csv-tab-update'
-    | 'create-chart-from-tab';
+    | 'dashboard-chart';
   content: string | Suggestion | any;
 };
 
@@ -42,49 +39,6 @@ export function DataStreamHandler({ id }: DataStreamHandlerProps) {
     lastProcessedIndex.current = dataStream.length - 1;
 
     (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
-      // Handle create-chart-from-tab events
-      if (delta.type === 'create-chart-from-tab' && delta.content) {
-        // Dispatch a custom event that the dashboard will listen for
-        const event = new CustomEvent('dashboardCsvTabEvent', {
-          detail: {
-            type: 'create-chart-from-tab',
-            content: delta.content
-          }
-        });
-        window.dispatchEvent(event);
-        return;
-      }
-
-      // Handle CSV tab creation events
-      if (delta.type === 'csv-tab-create' && delta.content) {
-        // Dispatch a custom event that the dashboard will listen for
-        const event = new CustomEvent('dashboardCsvTabEvent', {
-          detail: {
-            type: 'csv-tab-create',
-            title: delta.content.title || 'New Data',
-            csvData: delta.content.csvData || '',
-            sourceTabId: delta.content.sourceTabId
-          }
-        });
-        window.dispatchEvent(event);
-        return;
-      }
-
-      // Handle CSV tab update events
-      if (delta.type === 'csv-tab-update' && delta.content) {
-        // Dispatch a custom event that the dashboard will listen for
-        const event = new CustomEvent('dashboardCsvTabEvent', {
-          detail: {
-            type: 'csv-tab-update',
-            tabId: delta.content.tabId,
-            title: delta.content.title,
-            csvData: delta.content.csvData || ''
-          }
-        });
-        window.dispatchEvent(event);
-        return;
-      }
-
       // Handle dashboard-chart events
       if (delta.type === 'dashboard-chart' && delta.content) {
         console.log('DataStreamHandler: Processing dashboard-chart event', delta.content);

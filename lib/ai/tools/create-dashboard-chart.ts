@@ -2,7 +2,6 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import type { DataStreamWriter } from 'ai';
 import { generateUUID } from '@/lib/utils';
-import { processChartData } from '@/lib/chart/UnifiedChartDataProcessor';
 
 // Supported chart types for enhanced dashboard
 function getSupportedChartTypes(): readonly [string, ...string[]] {
@@ -14,22 +13,6 @@ function getSupportedChartTypes(): readonly [string, ...string[]] {
   ] as const;
 }
 
-// Simple CSV parser function
-function parseCSV(csvText: string): { headers: string[], data: Record<string, any>[] } {
-  const lines = csvText.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-  const data = lines.slice(1).map(line => {
-    const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-    const row: Record<string, any> = {};
-    headers.forEach((header, index) => {
-      const value = values[index] || '';
-      const numValue = Number.parseFloat(value);
-      row[header] = Number.isNaN(numValue) ? value : numValue;
-    });
-    return row;
-  });
-  return { headers, data };
-}
 
 interface CreateDashboardChartProps {
   dataStream: DataStreamWriter;
@@ -106,18 +89,6 @@ export const createChartFromTabData = ({ dataStream }: CreateDashboardChartProps
       if (sortOrder !== undefined) parameters.sortOrder = sortOrder;
       if (insights !== undefined) parameters.insights = insights;
       if (methodology !== undefined) parameters.methodology = methodology;
-
-      dataStream.writeData({
-        type: 'create-chart-from-tab',
-        content: {
-          chartId,
-          sourceTab,
-          chartType,
-          title,
-          description: description || `${chartType} chart showing data from ${sourceTab} tab`,
-          parameters
-        }
-      });
 
       return {
         success: true,

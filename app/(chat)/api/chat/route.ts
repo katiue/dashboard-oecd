@@ -57,11 +57,6 @@ import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
 import { 
-  extractCsvFiles, 
-  transformMessagesForAgent, 
-  generateCsvSystemPrompt 
-} from '@/lib/ai/csv-transform';
-import { 
   createLoadCsvFromUrl,
   createCleanData,
   createDetectAndResolveDuplicates,
@@ -213,13 +208,10 @@ export async function POST(request: Request) {
 
     const stream = createDataStream({
       execute: (dataStream) => {
-        const conversationCsvFiles = extractCsvFiles(messages, previousMessages, message);
-        const transformedMessages = transformMessagesForAgent(messages, conversationCsvFiles);
-        const systemPromptContent = systemPrompt({ selectedChatModel, requestHints }) +  generateCsvSystemPrompt(conversationCsvFiles);
         const result = streamText({
           model: provider.languageModel(selectedChatModel),
-          system: systemPromptContent,
-          messages: transformedMessages,
+          system: systemPrompt({ selectedChatModel, requestHints }),
+          messages: messages,
           maxSteps: 5,
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'

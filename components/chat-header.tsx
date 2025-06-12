@@ -15,7 +15,6 @@ import { ApiKeySelector } from './api-key-selector';
 import Dashboard from './dashboard';
 import type { Session } from 'next-auth';
 import { BarChartIcon } from './chart-icons';
-import { extractCsvFiles } from '@/lib/ai/csv-transform';
 import { useDashboard } from '@/hooks/use-dashboard';
 
 function PureChatHeader({
@@ -47,18 +46,9 @@ function PureChatHeader({
     if (buttonElement) {
       const rect = buttonElement.getBoundingClientRect();
       
-      // Extract CSV files from the conversation
-      const csvFiles = extractCsvFiles(messages || [], [], { attachments: [] });
-      
       // Always open the dashboard - let it handle the "no data" state internally
       let csvData = '';
       const dashboardData = dashboard.dashboardData; // Use existing dashboard data
-      
-      if (csvFiles.length > 0) {
-        // Use the first CSV file found
-        const primaryCsvFile = csvFiles[0];
-        csvData = primaryCsvFile.url; // Pass URL instead of data
-      }
       
       setDashboard({
         isVisible: true,
