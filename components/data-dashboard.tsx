@@ -302,11 +302,11 @@ export function DataDashboard({ csvData: initialCsvData, initialCharts }: DataDa
               <div className="text-xs text-muted-foreground bg-muted/50 rounded p-3 max-w-md mx-auto">
                 💬 In chat, use: <br/>
                 <code className="text-xs bg-background px-1 rounded">
-                  "Create charts for this data"
+                  &quot;Create charts for this data&quot;
                 </code> <br/>
                 or <br/>
                 <code className="text-xs bg-background px-1 rounded">
-                  "createDashboardChart"
+                  &quot;createDashboardChart&quot;
                 </code>
               </div>
             </div>
