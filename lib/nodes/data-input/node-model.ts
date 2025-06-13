@@ -1,4 +1,4 @@
-import { NodeModel, DataTable, DataTableSpec, ExecutionContext, SettingsObject, Cell } from '../core';
+import { NodeModel, type DataTable, type DataTableSpec, type ExecutionContext, type SettingsObject, type Cell } from '../core';
 
 // Simple Cell implementation
 class SimpleCell implements Cell {
@@ -11,7 +11,7 @@ class SimpleCell implements Cell {
 
 export class DataInputNodeModel extends NodeModel {
   private static CSV_URL_KEY = 'csv_url';
-  private csvUrl: string = '';
+  private csvUrl = '';
   
   // Public getter for csvUrl
   public getCsvUrl(): string {
@@ -63,13 +63,13 @@ export class DataInputNodeModel extends NodeModel {
           .filter(v => v !== '');
         
         // Check if values are numeric
-        const numericValues = sampleValues.map(v => Number(v)).filter(v => !isNaN(v));
+        const numericValues = sampleValues.map(v => Number(v)).filter(v => !Number.isNaN(v));
         if (numericValues.length > sampleValues.length * 0.8) {
           return 'number';
         }
         
         // Check if values are dates
-        const dateValues = sampleValues.filter(v => !isNaN(Date.parse(v)));
+        const dateValues = sampleValues.filter(v => !Number.isNaN(Date.parse(v)));
         if (dateValues.length > sampleValues.length * 0.7) {
           return 'date';
         }
@@ -100,10 +100,10 @@ export class DataInputNodeModel extends NodeModel {
           // Convert based on detected type
           if (type === 'number' && value !== '') {
             const numValue = Number(value);
-            value = isNaN(numValue) ? 0 : numValue;
+            value = Number.isNaN(numValue) ? 0 : numValue;
           } else if (type === 'date' && value !== '') {
             const dateValue = new Date(value);
-            value = isNaN(dateValue.getTime()) ? value : dateValue.toISOString();
+            value = Number.isNaN(dateValue.getTime()) ? value : dateValue.toISOString();
           }
           
           return new SimpleCell(value, type);

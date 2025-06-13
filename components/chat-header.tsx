@@ -50,7 +50,7 @@ function PureChatHeader({
       const rect = buttonElement.getBoundingClientRect();
       
       // Always open the dashboard - let it handle the "no data" state internally
-      let csvData = '';
+      const csvData = '';
       const dashboardData = dashboard.dashboardData; // Use existing dashboard data
       
       setDashboard({

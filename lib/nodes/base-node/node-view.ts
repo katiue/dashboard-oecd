@@ -1,5 +1,5 @@
-import { NodeModel } from './node-model';
-import { ReactElement } from 'react';
+import type { NodeModel } from './node-model';
+import type { ReactElement } from 'react';
 
 /**
  * Abstract base class for node visualization views

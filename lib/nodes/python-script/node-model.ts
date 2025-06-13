@@ -1,4 +1,4 @@
-import { NodeModel, DataTable, DataTableSpec, ExecutionContext, SettingsObject, Cell } from '../core';
+import { NodeModel, type DataTable, type DataTableSpec, type ExecutionContext, type SettingsObject, type Cell } from '../core';
 
 // Simple Cell implementation
 class SimpleCell implements Cell {
@@ -23,7 +23,7 @@ export class PythonScriptNodeModel extends NodeModel {
   private static LIBRARIES_KEY = 'libraries';
 
   // Settings
-  private scriptCode: string = `# Python script for data processing
+  private scriptCode = `# Python script for data processing
 import pandas as pd
 import numpy as np
 
@@ -149,13 +149,13 @@ def process_data(input_data):
     const result: Record<string, any[]> = {};
 
     // Simple simulation: if there's input data, process it
-    if (inputData['input_0'] && inputData['input_0'].length > 0) {
-      const inputRecords = inputData['input_0'];
+    if (inputData.input_0 && inputData.input_0.length > 0) {
+      const inputRecords = inputData.input_0;
       const processedRecords = inputRecords.map((record, index) => {
         const newRecord = { ...record };
         
         // Simulate adding a row index
-        newRecord['row_index'] = index;
+        newRecord.row_index = index;
         
         // Simulate processing numeric columns
         Object.keys(record).forEach(key => {
@@ -168,7 +168,7 @@ def process_data(input_data):
         return newRecord;
       });
 
-      result['output_0'] = processedRecords;
+      result.output_0 = processedRecords;
     }
 
     return result;

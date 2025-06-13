@@ -2,16 +2,16 @@
 
 import * as React from "react"
 import {
-  ColumnDef,
-  ColumnFiltersState,
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
+  type SortingState,
   useReactTable,
-  VisibilityState,
+  type VisibilityState,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown } from "lucide-react"
 
@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { DataTable, DataRow, Cell, ColumnSpec } from "@/lib/types"
+import type { DataTable, DataRow, Cell, ColumnSpec } from "@/lib/types"
 
 // Define UI types locally since we're no longer using the complex DataTable
 export interface DataTableColumn {

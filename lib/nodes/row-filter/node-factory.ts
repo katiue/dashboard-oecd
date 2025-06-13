@@ -1,4 +1,4 @@
-import { NodeFactory, NodeDialog, NodeMetadata, NodeView } from '../core';
+import { NodeFactory, type NodeDialog, type NodeMetadata, type NodeView } from '../core';
 import { RowFilterNodeModel } from './node-model';
 import { RowFilterNodeDialog } from './node-dialog';
 import { RowFilterNodeView } from './node-view';

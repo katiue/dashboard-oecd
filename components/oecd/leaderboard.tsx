@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { Trophy, Medal } from 'lucide-react'
+import { Trophy, } from 'lucide-react'
 
 interface CountryData {
   rank: number
@@ -23,7 +23,7 @@ export function Leaderboard({ countries, loading, onCountryClick }: LeaderboardP
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full size-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <div className="animate-spin rounded-full size-12 border-y-2 border-primary mx-auto" />
           <div className="text-muted-foreground">Loading leaderboard data...</div>
         </div>
       </div>
@@ -89,7 +89,7 @@ export function Leaderboard({ countries, loading, onCountryClick }: LeaderboardP
           <div className="font-semibold text-sm truncate max-w-32 text-center">{topThree[2]?.name}</div>
           <div className="text-2xl font-bold text-[#CD7F32]">3</div>
           <div className="text-sm font-medium">{topThree[2]?.value.toLocaleString()}</div>
-          <div className="bg-[#CD7F32] h-24 w-24 rounded-t-lg flex items-center justify-center">
+          <div className="bg-[#CD7F32] size-24 rounded-t-lg flex items-center justify-center">
             <Trophy className="size-8 text-white" />
           </div>
         </div>
@@ -104,7 +104,7 @@ export function Leaderboard({ countries, loading, onCountryClick }: LeaderboardP
             onClick={() => onCountryClick(country)}
           >
             <div className="flex items-center gap-3 flex-1">
-              <div className="bg-muted w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm">
+              <div className="bg-muted size-8 rounded-full flex items-center justify-center font-semibold text-sm">
                 {country.rank}
               </div>
               <div className="text-3xl">{country.flag}</div>

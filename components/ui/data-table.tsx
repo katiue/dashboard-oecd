@@ -103,7 +103,7 @@ export function DataTable({
         const aNum = Number(aVal)
         const bNum = Number(bVal)
         
-        if (!isNaN(aNum) && !isNaN(bNum)) {
+        if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
           return sortOrder === "asc" ? aNum - bNum : bNum - aNum
         } else {
           // String comparison

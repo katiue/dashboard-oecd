@@ -1,4 +1,4 @@
-import { NodeFactory, NodeDialog, NodeMetadata, NodeView } from '../core';
+import { NodeFactory, type NodeDialog, type NodeMetadata, type NodeView } from '../core';
 import { DataInputNodeModel } from './node-model';
 import { DataInputNodeDialog } from './node-dialog';
 import { DataInputNodeView } from './node-view';

@@ -1,4 +1,4 @@
-import { NodeFactory, NodeDialog, NodeView, NodeMetadata } from '../core';
+import { NodeFactory, type NodeDialog, type NodeView, type NodeMetadata } from '../core';
 import { GroupAndAggregateNodeModel } from './node-model';
 import { GroupAndAggregateNodeDialog } from './node-dialog';
 import { GroupAndAggregateNodeView } from './node-view';

@@ -1,7 +1,7 @@
-import { NodeModel } from './node-model';
-import { NodeDialog } from './node-dialog';
-import { NodeView } from './node-view';
-import { NodeMetadata } from '@/lib/types';
+import type { NodeModel } from './node-model';
+import type { NodeDialog } from './node-dialog';
+import type { NodeView } from './node-view';
+import type { NodeMetadata } from '@/lib/types';
 
 /**
  * Factory for creating node components (model, dialog, view)

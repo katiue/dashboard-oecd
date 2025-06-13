@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { NodeDialog, SettingsObject, DataTableSpec } from '../core';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { NodeDialog, type SettingsObject, type DataTableSpec } from '../core';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { CleaningStrategy, DuplicateStrategy, TypeInferenceMode } from './node-model';
 
 export class DataCleaningNodeDialog extends NodeDialog {
@@ -21,12 +18,12 @@ export class DataCleaningNodeDialog extends NodeDialog {
 
   private cleaningStrategy: CleaningStrategy = CleaningStrategy.BASIC;
   private duplicateStrategy: DuplicateStrategy = DuplicateStrategy.SKIP;
-  private duplicateColumn: string = '';
+  private duplicateColumn = '';
   private typeInference: TypeInferenceMode = TypeInferenceMode.SAFE;
-  private trimWhitespace: boolean = true;
-  private normalizeText: boolean = true;
-  private standardizeNulls: boolean = true;
-  private removeEmptyRows: boolean = true;
+  private trimWhitespace = true;
+  private normalizeText = true;
+  private standardizeNulls = true;
+  private removeEmptyRows = true;
 
   createDialogPanel(settings: SettingsObject, specs: DataTableSpec[]): React.ReactElement {
     this.loadSettings(settings, specs);

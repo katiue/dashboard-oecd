@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { NodeView, DataTable } from '../core';
-import { DataInputNodeModel } from './node-model';
-import { Button } from '@/components/ui/button';
+import { NodeView, type DataTable } from '../core';
+import type { DataInputNodeModel } from './node-model';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { NodeDataTable } from '@/components/ui/node-data-table';
 

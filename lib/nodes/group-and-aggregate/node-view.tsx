@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { NodeView, DataTable } from '../core';
-import { GroupAndAggregateNodeModel, AggregationMethod } from './node-model';
+import { NodeView, type DataTable } from '../core';
+import { type GroupAndAggregateNodeModel, AggregationMethod } from './node-model';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +16,7 @@ import { NodeDataTable } from '@/components/ui/node-data-table';
 export class GroupAndAggregateNodeView extends NodeView<GroupAndAggregateNodeModel> {
   private outputTable: DataTable | null = null;
   private data: any[] = [];
-  private isLoading: boolean = true;
+  private isLoading = true;
   private error: string | null = null;
   private groupColumns: string[] = [];
   private aggregations: any[] = [];

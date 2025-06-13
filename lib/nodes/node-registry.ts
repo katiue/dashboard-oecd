@@ -1,4 +1,4 @@
-import { NodeFactory } from './core';
+import type { NodeFactory } from './core';
 
 /**
  * Registry for all node factories in the system

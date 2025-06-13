@@ -156,9 +156,9 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
                 {growthIsPositive ? "+" : ""}
                 {growthRate.toFixed(1)}%
                 {growthIsPositive ? (
-                  <TrendingUp className="h-4 w-4 text-green-600 ml-1" />
+                  <TrendingUp className="size-4 text-green-600 ml-1" />
                 ) : (
-                  <TrendingUp className="h-4 w-4 text-red-600 ml-1 rotate-180" />
+                  <TrendingUp className="size-4 text-red-600 ml-1 rotate-180" />
                 )}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
@@ -166,7 +166,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
               </div>
             </div>
             <div className="bg-amber-100 dark:bg-amber-800/30 p-2 rounded-full">
-              <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <TrendingUp className="size-5 text-amber-600 dark:text-amber-400" />
             </div>
           </div>
         </Card>
@@ -176,15 +176,15 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
       <Tabs defaultValue="trends" className="mt-6">
         <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="trends" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="size-4" />
             Trends
           </TabsTrigger>
           <TabsTrigger value="peers" className="flex items-center gap-2">
-            <Flag className="h-4 w-4" />
+            <Flag className="size-4" />
             Regional Peers
           </TabsTrigger>
           <TabsTrigger value="insights" className="flex items-center gap-2">
-            <Star className="h-4 w-4" />
+            <Star className="size-4" />
             Insights
           </TabsTrigger>
         </TabsList>
@@ -256,26 +256,26 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
               <h3 className="text-lg font-medium mb-2">Key Insights</h3>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
-                  <ArrowUpRight className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <ArrowUpRight className="size-4 text-blue-600 mt-0.5 shrink-0" />
                   <span>
                     {country.name} ranks <strong>#{country.rank}</strong> globally in patent applications
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <ArrowUpRight className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <ArrowUpRight className="size-4 text-blue-600 mt-0.5 shrink-0" />
                   <span>
                     Main filing authority: <strong>{country.code === "USA" ? "USPTO" : "EPO"}</strong>
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <ArrowUpRight className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <ArrowUpRight className="size-4 text-blue-600 mt-0.5 shrink-0" />
                   <span>
                     {country.name} has <strong>{patentsPerMillion.toLocaleString()}</strong> patents per million
                     inhabitants
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <ArrowUpRight className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <ArrowUpRight className="size-4 text-blue-600 mt-0.5 shrink-0" />
                   <span>
                     {growthIsPositive ? "Positive" : "Negative"} growth trend of{" "}
                     <strong className={growthIsPositive ? "text-green-600" : "text-red-600"}>
@@ -297,7 +297,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
                     <span className="font-medium">28%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "28%" }}></div>
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "28%" }} />
                   </div>
                 </div>
                 <div>
@@ -306,7 +306,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
                     <span className="font-medium">24%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "24%" }}></div>
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "24%" }} />
                   </div>
                 </div>
                 <div>
@@ -315,7 +315,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
                     <span className="font-medium">18%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "18%" }}></div>
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "18%" }} />
                   </div>
                 </div>
                 <div>
@@ -324,7 +324,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
                     <span className="font-medium">15%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "15%" }}></div>
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "15%" }} />
                   </div>
                 </div>
                 <div>
@@ -333,7 +333,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
                     <span className="font-medium">15%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "15%" }}></div>
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "15%" }} />
                   </div>
                 </div>
               </div>

@@ -198,7 +198,7 @@ export function DynamicChart({ type, data, yearlyData, yearRange }: DynamicChart
         </ResponsiveContainer>
       )
 
-    case "treemap":
+    case "treemap": {
       // Transform data for treemap
       const treemapData = chartData.map((item) => ({
         name: `${item.flag} ${item.name}`,
@@ -220,6 +220,7 @@ export function DynamicChart({ type, data, yearlyData, yearRange }: DynamicChart
           </Treemap>
         </ResponsiveContainer>
       )
+    }
 
     default:
       return <div>Chart type not supported</div>

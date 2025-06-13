@@ -1,4 +1,4 @@
-import { NodeModel, DataTable, DataTableSpec, ExecutionContext, SettingsObject, Cell } from '../core';
+import { NodeModel, type DataTable, type DataTableSpec, type ExecutionContext, type SettingsObject, type Cell } from '../core';
 
 // Simple Cell implementation
 class SimpleCell implements Cell {
@@ -41,12 +41,12 @@ export class DataCleaningNodeModel extends NodeModel {
   // Settings
   private cleaningStrategy: CleaningStrategy = CleaningStrategy.BASIC;
   private duplicateStrategy: DuplicateStrategy = DuplicateStrategy.SKIP;
-  private duplicateColumn: string = '';
+  private duplicateColumn = '';
   private typeInference: TypeInferenceMode = TypeInferenceMode.SAFE;
-  private trimWhitespace: boolean = true;
-  private normalizeText: boolean = true;
-  private standardizeNulls: boolean = true;
-  private removeEmptyRows: boolean = true;
+  private trimWhitespace = true;
+  private normalizeText = true;
+  private standardizeNulls = true;
+  private removeEmptyRows = true;
 
   constructor() {
     super(1, 1); // 1 input, 1 output
@@ -62,7 +62,7 @@ export class DataCleaningNodeModel extends NodeModel {
     
     let cleanedData = this.convertTableToRows(inputTable);
     const headers = inputTable.spec.columns.map(col => col.name);
-    let operations: string[] = [`Started with ${cleanedData.length} rows`];
+    const operations: string[] = [`Started with ${cleanedData.length} rows`];
 
     // Step 1: Basic cleaning
     if (this.cleaningStrategy !== CleaningStrategy.CUSTOM || this.trimWhitespace || this.normalizeText || this.standardizeNulls) {
@@ -207,18 +207,19 @@ export class DataCleaningNodeModel extends NodeModel {
     }
 
     switch (this.duplicateStrategy) {
-      case DuplicateStrategy.REMOVE:
+      case DuplicateStrategy.REMOVE: {
         const uniqueData = Object.values(duplicateGroups).map(group => group[0]);
         return {
           data: uniqueData,
           operation: `Removed ${duplicateCount} duplicate rows`
         };
+      }
 
-      case DuplicateStrategy.AGGREGATE:
+      case DuplicateStrategy.AGGREGATE: {
         const numericColumns = headers.filter(header => {
           if (header === identifierColumn) return false;
           const values = data.map(row => row[header]).filter(v => v !== null && v !== undefined);
-          const numericValues = values.map(v => Number(v)).filter(v => !isNaN(v));
+          const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v));
           return numericValues.length > values.length * 0.8;
         });
 
@@ -229,7 +230,7 @@ export class DataCleaningNodeModel extends NodeModel {
             if (header === identifierColumn) return;
             
             if (numericColumns.includes(header)) {
-              const values = rows.map(r => Number(r[header])).filter(v => !isNaN(v));
+              const values = rows.map(r => Number(r[header])).filter(v => !Number.isNaN(v));
               aggregatedRow[header] = values.reduce((a, b) => a + b, 0);
             } else {
               const firstValue = rows.find(r => r[header] !== null && r[header] !== undefined)?.[header];
@@ -244,8 +245,9 @@ export class DataCleaningNodeModel extends NodeModel {
           data: aggregatedData,
           operation: `Aggregated ${duplicateCount} duplicates into ${aggregatedData.length} unique rows`
         };
+      }
 
-      case DuplicateStrategy.RENAME:
+      case DuplicateStrategy.RENAME: {
         const nameCounters: Record<string, number> = {};
         const renamedData = data.map(row => {
           const id = String(row[identifierColumn]).trim();
@@ -264,6 +266,7 @@ export class DataCleaningNodeModel extends NodeModel {
           data: renamedData,
           operation: `Renamed ${duplicateCount} duplicate entries with unique suffixes`
         };
+      }
 
       default:
         return { data, operation: 'No duplicate processing applied' };
@@ -283,7 +286,7 @@ export class DataCleaningNodeModel extends NodeModel {
       let confidence = 0;
 
       // Test for numeric type
-      const numericValues = sampleValues.map(v => Number(v)).filter(v => !isNaN(v));
+      const numericValues = sampleValues.map(v => Number(v)).filter(v => !Number.isNaN(v));
       if (numericValues.length > sampleValues.length * 0.8) {
         inferredType = 'number';
         confidence = numericValues.length / sampleValues.length;
@@ -292,7 +295,7 @@ export class DataCleaningNodeModel extends NodeModel {
       // Test for date type
       const dateValues = sampleValues.filter(v => {
         const date = new Date(v);
-        return !isNaN(date.getTime()) && date.getFullYear() > 1900;
+        return !Number.isNaN(date.getTime()) && date.getFullYear() > 1900;
       });
       if (dateValues.length > sampleValues.length * 0.7 && dateValues.length > numericValues.length) {
         inferredType = 'date';
@@ -328,21 +331,23 @@ export class DataCleaningNodeModel extends NodeModel {
 
         try {
           switch (inferredType) {
-            case 'number':
+            case 'number': {
               const numValue = Number(value);
-              if (!isNaN(numValue)) {
+              if (!Number.isNaN(numValue)) {
                 newRow[header] = numValue;
                 totalCasts++;
               }
               break;
-            case 'date':
+            }
+            case 'date': {
               const dateValue = new Date(value);
-              if (!isNaN(dateValue.getTime())) {
+              if (!Number.isNaN(dateValue.getTime())) {
                 newRow[header] = dateValue.toISOString().split('T')[0];
                 totalCasts++;
               }
               break;
-            case 'boolean':
+            }
+            case 'boolean': {
               const str = String(value).toLowerCase();
               if (['true', 'yes', '1', 'y'].includes(str)) {
                 newRow[header] = true;
@@ -352,6 +357,7 @@ export class DataCleaningNodeModel extends NodeModel {
                 totalCasts++;
               }
               break;
+            }
           }
         } catch (error) {
           // Keep original value if casting fails

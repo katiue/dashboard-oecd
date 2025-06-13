@@ -160,24 +160,24 @@ JPN,2016,AP,PATN,22000,Japan`
     })
 
     const filteredByYearRange = dataRows.filter((row) => {
-      const year = Number.parseInt(row["TIME_PERIOD"])
+      const year = Number.parseInt(row.TIME_PERIOD)
       return (
         year >= yearRange.start &&
         year <= yearRange.end &&
-        row["MEASURE"] === "AP" &&
-        row["UNIT_MEASURE"] === "PATN" &&
-        row["REF_AREA"] &&
-        row["OBS_VALUE"] &&
-        row["REF_AREA"] !== "W"
+        row.MEASURE === "AP" &&
+        row.UNIT_MEASURE === "PATN" &&
+        row.REF_AREA &&
+        row.OBS_VALUE &&
+        row.REF_AREA !== "W"
       )
     })
 
     const countryTotals: Record<string, { code: string; name: string; value: number; region: string }> = {}
 
     filteredByYearRange.forEach((row) => {
-      const code = row["REF_AREA"]
-      const name = row["Reference area"] || row["REF_AREA"]
-      const value = Number.parseFloat(row["OBS_VALUE"]) || 0
+      const code = row.REF_AREA
+      const name = row["Reference area"] || row.REF_AREA
+      const value = Number.parseFloat(row.OBS_VALUE) || 0
       const region = getCountryRegion(code)
 
       if (!countryTotals[code]) {
@@ -206,14 +206,14 @@ JPN,2016,AP,PATN,22000,Japan`
     for (let year = yearRange.start; year <= yearRange.end; year++) {
       const yearData = dataRows.filter(
         (row) =>
-          Number.parseInt(row["TIME_PERIOD"]) === year && row["MEASURE"] === "AP" && row["UNIT_MEASURE"] === "PATN",
+          Number.parseInt(row.TIME_PERIOD) === year && row.MEASURE === "AP" && row.UNIT_MEASURE === "PATN",
       )
 
       const topCountriesForYear = yearData
         .map((row) => ({
-          code: row["REF_AREA"],
-          name: row["Reference area"] || row["REF_AREA"],
-          value: Number.parseFloat(row["OBS_VALUE"]) || 0,
+          code: row.REF_AREA,
+          name: row["Reference area"] || row.REF_AREA,
+          value: Number.parseFloat(row.OBS_VALUE) || 0,
         }))
         .sort((a, b) => b.value - a.value)
         .slice(0, 5)
@@ -249,13 +249,13 @@ JPN,2016,AP,PATN,22000,Japan`
     })
 
     const countryData = dataRows.filter(
-      (row) => row["REF_AREA"] === countryCode && row["MEASURE"] === "AP" && row["UNIT_MEASURE"] === "PATN",
+      (row) => row.REF_AREA === countryCode && row.MEASURE === "AP" && row.UNIT_MEASURE === "PATN",
     )
 
     return countryData
       .map((row) => ({
-        year: Number.parseInt(row["TIME_PERIOD"]),
-        value: Number.parseFloat(row["OBS_VALUE"]) || 0,
+        year: Number.parseInt(row.TIME_PERIOD),
+        value: Number.parseFloat(row.OBS_VALUE) || 0,
       }))
       .sort((a, b) => a.year - b.year)
   }

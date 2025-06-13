@@ -4,42 +4,33 @@ import ReactFlow, {
   addEdge,
   Background,
   Controls,
-  Connection,
-  Edge,
-  Node,
-  NodeTypes,
-  EdgeTypes,
-  OnConnectStartParams,
+  type Connection,
+  type Edge,
+  type Node,
+  type NodeTypes,
   useNodesState,
   useEdgesState,
   Panel,
   ConnectionLineType,
-  Handle,
-  Position
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, } from '@/components/ui/card';
 // Sheet import removed - using fixed sidebar instead of modal sheet
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { 
   PlayIcon, 
   DownloadIcon, 
   UploadIcon, 
-  PlusIcon, 
   TrashIcon, 
   MenuIcon,
   CrossIcon,
-  LoaderIcon,
-  EyeIcon
 } from '@/components/icons';
-import { SettingsIcon } from 'lucide-react';
 
-import { NodeRegistry, NodeFactory, NodeDialog, ExecutionContext, DataTable, DataTableSpec } from '@/lib/nodes/core';
+import { NodeRegistry, type NodeFactory, type NodeDialog, type ExecutionContext, type DataTable, type DataTableSpec } from '@/lib/nodes/core';
 import { Node as WorkflowNode } from '@/components/ui/node';
 import { setupNodeRegistry } from '@/lib/nodes/registry-setup';
 
@@ -138,7 +129,7 @@ class WorkflowExecutionEngine {
       });
       
       // Sort inputs by port index
-      const maxPort = Math.max(...Array.from(inputsByPort.keys()).map(p => parseInt(p, 10)));
+      const maxPort = Math.max(...Array.from(inputsByPort.keys()).map(p => Number.parseInt(p, 10)));
       for (let i = 0; i <= maxPort; i++) {
         inputs[i] = inputsByPort.get(`${i}`) || this.createEmptyTable();
       }
@@ -203,7 +194,7 @@ class WorkflowExecutionEngine {
   private getPortIndex(handle: string | null): number | null {
     if (!handle) return null;
     const match = handle.match(/^(source|target)-(\d+)$/);
-    return match ? parseInt(match[2], 10) : null;
+    return match ? Number.parseInt(match[2], 10) : null;
   }
     private createEmptyTable(): DataTable {
     return {
@@ -286,7 +277,7 @@ class WorkflowExecutionEngine {
       });
       
       // Sort inputs by port index
-      const maxPort = Math.max(...Array.from(inputsByPort.keys()).map(p => parseInt(p, 10)));
+      const maxPort = Math.max(...Array.from(inputsByPort.keys()).map(p => Number.parseInt(p, 10)));
       for (let i = 0; i <= maxPort; i++) {
         inputs[i] = inputsByPort.get(`${i}`) || this.createEmptyTable();
       }
@@ -400,17 +391,17 @@ export const WorkflowEditor: React.FC = () => {
     return Array(node.data.inputPorts).fill(null).map((_, portIndex) => {
       // Find the edge connected to this input port
       const edge = incomingEdges.find(e => {
-        const targetPortIndex = e.targetHandle ? parseInt(e.targetHandle.split('-')[1]) : 0;
+        const targetPortIndex = e.targetHandle ? Number.parseInt(e.targetHandle.split('-')[1]) : 0;
         return targetPortIndex === portIndex;
       });
       
       if (edge) {
         // Get the source node and its output spec
         const sourceNode = nodes.find(n => n.id === edge.source);
-        if (sourceNode && sourceNode.data.outputs && sourceNode.data.outputs.length > 0) {
-          const sourcePortIndex = edge.sourceHandle ? parseInt(edge.sourceHandle.split('-')[1]) : 0;
+        if (sourceNode?.data.outputs && sourceNode.data.outputs.length > 0) {
+          const sourcePortIndex = edge.sourceHandle ? Number.parseInt(edge.sourceHandle.split('-')[1]) : 0;
           const output = sourceNode.data.outputs[sourcePortIndex];
-          if (output && output.spec) {
+          if (output?.spec) {
             return output.spec;
           }
         }

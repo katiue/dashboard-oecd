@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NodeDialog, SettingsObject, DataTableSpec } from '../core';
+import { NodeDialog, type SettingsObject, type DataTableSpec } from '../core';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { PlusIcon, TrashIcon } from '@/components/icons';
-import { PythonPortConfig } from './node-model';
+import type { PythonPortConfig } from './node-model';
 
 export class PythonScriptNodeDialog extends NodeDialog {
   private static SCRIPT_CODE_KEY = 'script_code';
@@ -18,7 +18,7 @@ export class PythonScriptNodeDialog extends NodeDialog {
   private static OUTPUT_PORTS_KEY = 'output_ports';
   private static LIBRARIES_KEY = 'libraries';
 
-  private scriptCode: string = '';
+  private scriptCode = '';
   private inputPorts: PythonPortConfig[] = [];
   private outputPorts: PythonPortConfig[] = [];
   private libraries: string[] = [];

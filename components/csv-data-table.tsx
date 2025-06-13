@@ -123,7 +123,7 @@ export function CsvDataTable({
         const aNum = Number(aVal)
         const bNum = Number(bVal)
         
-        if (!isNaN(aNum) && !isNaN(bNum)) {
+        if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
           return sortOrder === "asc" ? aNum - bNum : bNum - aNum
         } else {
           const aStr = String(aVal).toLowerCase()
@@ -152,7 +152,7 @@ export function CsvDataTable({
   const numericColumns = useMemo(() => {
     return parsedData.headers.filter(header => {
       const values = parsedData.data.map(row => row[header]).filter(v => v != null && v !== '')
-      const numericValues = values.map(v => Number(v)).filter(v => !isNaN(v))
+      const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v))
       return numericValues.length > values.length * 0.8
     })
   }, [parsedData])
@@ -440,7 +440,7 @@ export function CsvDataTable({
   const handleSumColumn = (column: string) => {
     try {
       const values = parsedData.data.map(row => row[column]).filter(v => v != null && v !== '')
-      const numericValues = values.map(v => Number(v)).filter(v => !isNaN(v))
+      const numericValues = values.map(v => Number(v)).filter(v => !Number.isNaN(v))
       
       if (numericValues.length === 0) {
         toast.error(`No numeric values found in column '${column}'`)

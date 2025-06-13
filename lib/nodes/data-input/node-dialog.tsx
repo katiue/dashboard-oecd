@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { NodeDialog, SettingsObject, DataTableSpec } from '../core';
-import { Button } from '@/components/ui/button';
+import { NodeDialog, type SettingsObject, type DataTableSpec } from '../core';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export class DataInputNodeDialog extends NodeDialog {
   private static CSV_URL_KEY = 'csv_url';
-  private csvUrl: string = '';
+  private csvUrl = '';
 
   createDialogPanel(settings: SettingsObject, specs: DataTableSpec[]): React.ReactElement {
     // Make sure we load current settings first

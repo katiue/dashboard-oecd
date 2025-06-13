@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { NodeView, DataTable } from '../core';
-import { DataCleaningNodeModel } from './node-model';
+import { NodeView, type DataTable } from '../core';
+import type { DataCleaningNodeModel } from './node-model';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';

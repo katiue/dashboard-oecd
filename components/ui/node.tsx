@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoaderIcon, EyeIcon, PlayIcon } from '@/components/icons'
 import { SettingsIcon } from 'lucide-react'
-import { DataTable } from '@/lib/types'
+import type { DataTable } from '@/lib/types'
 
 export interface NodeData {
   label: string

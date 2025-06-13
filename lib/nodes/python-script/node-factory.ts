@@ -1,4 +1,4 @@
-import { NodeFactory, NodeDialog, NodeMetadata, NodeView } from '../core';
+import { NodeFactory, type NodeDialog, type NodeMetadata, type NodeView } from '../core';
 import { PythonScriptNodeModel } from './node-model';
 import { PythonScriptNodeDialog } from './node-dialog';
 import { PythonScriptNodeView } from './node-view';

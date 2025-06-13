@@ -36,9 +36,12 @@ import {
   loadOECDPatentData,
   cleanOECDPatentData,
   preparePatentDataForVisualization,
-  inferAndCastTypes,
-  filterData,
   sumColumn
+, 
+  createLoadCsvFromUrl,
+  createCleanData,
+  createDetectAndResolveDuplicates,
+  createAggregateData
 } from '@/lib/ai/tools/tabular-data-tools';
 import { createChartFromTabData } from '@/lib/ai/tools/create-dashboard-chart';
 
@@ -56,12 +59,7 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
-import { 
-  createLoadCsvFromUrl,
-  createCleanData,
-  createDetectAndResolveDuplicates,
-  createAggregateData
-} from '@/lib/ai/tools/tabular-data-tools';
+
 
 
 export const maxDuration = 60;

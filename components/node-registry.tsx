@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { WorkflowEditor } from './workflow-editor';
 import { NodeRegistry } from '@/lib/nodes/node-registry';
 import { GroupAndAggregateNodeFactory } from '@/lib/nodes/group-and-aggregate/node-factory';
@@ -9,7 +9,5 @@ const registry = NodeRegistry.getInstance();
 registry.registerFactory(new GroupAndAggregateNodeFactory());
 // Register more nodes...
 
-ReactDOM.render(
-  <WorkflowEditor />,
-  document.getElementById('root')
-);
+const root = createRoot(document.getElementById('root')!);
+root.render(<WorkflowEditor />);

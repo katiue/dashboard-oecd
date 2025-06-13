@@ -1,6 +1,5 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import type { DataStreamWriter } from 'ai';
 
 // Simple CSV processing utilities
 function parseCSV(csvText: string): { headers: string[], data: Record<string, any>[] } {
@@ -1418,7 +1417,7 @@ export const inferAndCastTypes = tool({
         let inferredType = 'text';
         let confidence = 0;
         let castableValues = 0;
-        let errorCount = 0;
+        const errorCount = 0;
         
         // Test for numeric type
         const numericValues = sampleValues.map((v: any) => Number(v)).filter((v: any) => !Number.isNaN(v));

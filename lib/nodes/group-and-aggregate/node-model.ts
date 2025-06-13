@@ -1,12 +1,12 @@
 import { 
   NodeModel, 
-  DataTable, 
-  DataTableSpec, 
-  ExecutionContext, 
-  SettingsObject,
-  DataRow,
-  Cell,
-  ColumnSpec
+  type DataTable, 
+  type DataTableSpec, 
+  type ExecutionContext, 
+  type SettingsObject,
+  type DataRow,
+  type Cell,
+  type ColumnSpec
 } from '../core';
 
 // Define supported aggregation methods

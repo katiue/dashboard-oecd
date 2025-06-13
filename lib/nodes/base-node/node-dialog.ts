@@ -1,5 +1,5 @@
-import { DataTableSpec, SettingsObject } from '@/lib/types';
-import { ReactElement } from 'react';
+import type { DataTableSpec, SettingsObject } from '@/lib/types';
+import type { ReactElement } from 'react';
 
 /**
  * Abstract base class for node configuration dialogs

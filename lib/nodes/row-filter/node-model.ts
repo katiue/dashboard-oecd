@@ -1,4 +1,4 @@
-import { NodeModel, DataTable, DataTableSpec, ExecutionContext, SettingsObject, Cell } from '../core';
+import { NodeModel, type DataTable, type DataTableSpec, type ExecutionContext, type SettingsObject, type Cell } from '../core';
 
 // Simple Cell implementation
 class SimpleCell implements Cell {

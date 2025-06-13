@@ -1,4 +1,4 @@
-import { DataTable, DataTableSpec, ExecutionContext, SettingsObject } from '@/lib/types';
+import type { DataTable, DataTableSpec, ExecutionContext, SettingsObject } from '@/lib/types';
 
 /**
  * Abstract base class for all node models in the system

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { NodeDialog, SettingsObject, DataTableSpec } from '../core';
+import { NodeDialog, type SettingsObject, type DataTableSpec } from '../core';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { FilterCondition, FilterLogic } from './node-model';
+import { type FilterCondition, FilterLogic } from './node-model';
 import { Trash2, Plus } from 'lucide-react';
 
 export class RowFilterNodeDialog extends NodeDialog {
@@ -232,7 +231,7 @@ function RowFilterDialogPanel(props: RowFilterDialogPanelProps) {
                             const values = e.target.value.split('-').map(v => {
                               const trimmed = v.trim();
                               const num = Number(trimmed);
-                              return isNaN(num) ? trimmed : num;
+                              return Number.isNaN(num) ? trimmed : num;
                             });
                             updateFilter(index, { value: values });
                           }}
@@ -244,7 +243,7 @@ function RowFilterDialogPanel(props: RowFilterDialogPanelProps) {
                           onChange={(e) => {
                             const val = e.target.value;
                             const num = Number(val);
-                            updateFilter(index, { value: isNaN(num) ? val : num });
+                            updateFilter(index, { value: Number.isNaN(num) ? val : num });
                           }}
                           placeholder="Enter value"
                         />
