@@ -41,7 +41,7 @@ function Dashboard({ isVisible, csvData, dashboardData, boundingBox, onClose }: 
   const isSidebarOpen = sidebarState === "expanded"
   const isMobile = windowWidth ? windowWidth < 768 : false
 
-  // Simple state for 2 fixed tabs
+  // Simple state for 3 fixed tabs
   const [activeTab, setActiveTab] = useState<string>("dashboard")
   const [charts, setCharts] = useState<any[]>([])
 
@@ -180,7 +180,8 @@ function Dashboard({ isVisible, csvData, dashboardData, boundingBox, onClose }: 
                 <div className="flex flex-col">
                   <div className="font-medium">Data Analysis Dashboard</div>
                   <div className="text-sm text-muted-foreground">
-                    {activeTab === "workflow" ? "Data Processing Workflow" : "Charts and Visualizations"}
+                    {activeTab === "workflow" ? "Data Processing Workflow" : 
+                     "Charts and Visualizations"}
                   </div>
                 </div>
               </div>
@@ -188,7 +189,7 @@ function Dashboard({ isVisible, csvData, dashboardData, boundingBox, onClose }: 
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-              <TabsList className="grid grid-cols-2 border-b bg-background rounded-none h-12">
+              <TabsList className="grid grid-cols-3 border-b bg-background rounded-none h-12">
                 <TabsTrigger value="dashboard" className="flex items-center gap-2">
                   <ChartBarIcon size={16} />
                   Dashboard
@@ -207,7 +208,7 @@ function Dashboard({ isVisible, csvData, dashboardData, boundingBox, onClose }: 
                 >
                   <DataDashboard csvData={csvData} initialCharts={charts} />
                 </TabsContent>
-                
+
                 <TabsContent
                   value="workflow"
                   className="absolute inset-0 m-0 data-[state=active]:flex data-[state=active]:flex-col overflow-auto"

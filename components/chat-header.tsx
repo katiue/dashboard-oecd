@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
-import React, { useRef, useCallback , memo } from 'react';
+import React, { useRef, useCallback , memo, useState } from 'react';
 
 import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
@@ -16,6 +16,8 @@ import Dashboard from './dashboard';
 import type { Session } from 'next-auth';
 import { BarChartIcon } from './chart-icons';
 import { useDashboard } from '@/hooks/use-dashboard';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { OECDDashboard } from './oecd/oecd-dashboard';
 
 function PureChatHeader({
   chatId,
@@ -38,6 +40,7 @@ function PureChatHeader({
   const { open, toggleSidebar } = useSidebar();
   const dashboardButtonRef = useRef<HTMLButtonElement>(null);
   const { dashboard, setDashboard } = useDashboard();
+  const [isOecdOpen, setIsOecdOpen] = useState(false);
 
   const { width: windowWidth } = useWindowSize();
 
@@ -126,6 +129,20 @@ function PureChatHeader({
           </TooltipTrigger>
           <TooltipContent>Open Data Dashboard</TooltipContent>
         </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsOecdOpen(true)}
+              className="flex items-center gap-2 order-6"
+            >
+              <BarChartIcon size={16} />
+              <span className="hidden sm:inline">OECD Dashboard</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Open OECD Dashboard</TooltipContent>
+        </Tooltip>
     </header>
 
       <Dashboard
@@ -135,6 +152,11 @@ function PureChatHeader({
         boundingBox={dashboard.boundingBox}
         onClose={closeDashboard}
       />
+      <Dialog open={isOecdOpen} onOpenChange={setIsOecdOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <OECDDashboard />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

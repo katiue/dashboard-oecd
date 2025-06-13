@@ -41,8 +41,7 @@ import { SettingsIcon } from 'lucide-react';
 
 import { NodeRegistry, NodeFactory, NodeDialog, ExecutionContext, DataTable, DataTableSpec } from '@/lib/nodes/core';
 import { Node as WorkflowNode } from '@/components/ui/node';
-import { GroupAndAggregateNodeFactory } from '@/lib/nodes/group-and-aggregate/node-factory';
-import { DataInputNodeFactory } from '@/lib/nodes/data-input/node-factory';
+import { setupNodeRegistry } from '@/lib/nodes/registry-setup';
 
 // Define the custom node component using the new WorkflowNode
 const CustomNode: React.FC<any> = ({ id, data, selected }) => {
@@ -350,11 +349,10 @@ export const WorkflowEditor: React.FC = () => {
   // Node registry for available nodes
   const registry = NodeRegistry.getInstance();
   
-  // Register the NodeFactories
+  // Setup node registry with all available factories
   useEffect(() => {
-    registry.registerFactory(new GroupAndAggregateNodeFactory());
-    registry.registerFactory(new DataInputNodeFactory());
-  }, [registry]);
+    setupNodeRegistry();
+  }, []);
     
   // Workflow state
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
