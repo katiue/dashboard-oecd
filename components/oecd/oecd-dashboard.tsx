@@ -282,7 +282,7 @@ JPN,2016,AP,PATN,22000,Japan`
       <div className="text-center space-y-3 mb-8">
         <h1 className="text-3xl font-bold tracking-tight font-mono">OECD Patents Dashboard</h1>
         <Badge className="justify-center inline-flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
+          <Calendar className="size-4" />
           {yearRange.start} → {yearRange.end}
         </Badge>
       </div>
@@ -291,19 +291,19 @@ JPN,2016,AP,PATN,22000,Japan`
         <MetricCard
           title="Total Patent Applications"
           value={loading ? "..." : totalPatents.toLocaleString()}
-          icon={<ChartColumn className="h-5 w-5" />}
+          icon={<ChartColumn className="size-5" />}
           color="rgb(38, 98, 217)"
         />
         <MetricCard
           title="Total Patent Families"
           value="275.577"
-          icon={<Globe className="h-5 w-5" />}
+          icon={<Globe className="size-5" />}
           color="rgb(46, 184, 138)"
         />
         <MetricCard
           title="Active Countries"
           value={loading ? "..." : String(activeCountries)}
-          icon={<MapPin className="h-5 w-5" />}
+          icon={<MapPin className="size-5" />}
           color="rgb(232, 140, 48)"
         />
       </div>
@@ -312,7 +312,7 @@ JPN,2016,AP,PATN,22000,Japan`
         <CardHeader className="grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-muted-foreground" />
+              <Trophy className="size-5 text-muted-foreground" />
               <div className="text-xl font-semibold">Top 10 Innovation Leaders</div>
             </div>
             <div className="flex items-center gap-4">
@@ -335,7 +335,7 @@ JPN,2016,AP,PATN,22000,Japan`
               </Select>
               <Select value={selectedFilter} onValueChange={handleFilterChange}>
                 <SelectTrigger className="w-32 h-8">
-                  <Funnel className="h-3 w-3 mr-1" />
+                  <Funnel className="size-3 mr-1" />
                   <SelectValue>{selectedFilter.charAt(0).toUpperCase() + selectedFilter.slice(1)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -360,7 +360,7 @@ JPN,2016,AP,PATN,22000,Japan`
           <CardHeader className="grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-muted-foreground" />
+                <Building2 className="size-3 text-muted-foreground" />
                 <div className="text-lg font-semibold">
                   Patent Applications by Country ({yearRange.start}-{yearRange.end})
                 </div>
@@ -369,7 +369,7 @@ JPN,2016,AP,PATN,22000,Japan`
                 <Badge variant="outline">{topCountries.length} countries</Badge>
                 <Select value={chartType} onValueChange={handleChartTypeChange}>
                   <SelectTrigger className="w-32 h-8">
-                    <ChartColumn className="h-3 w-3 mr-1" />
+                    <ChartColumn className="size-3 mr-1" />
                     <SelectValue>{chartType.charAt(0).toUpperCase() + chartType.slice(1)}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -396,7 +396,7 @@ JPN,2016,AP,PATN,22000,Japan`
       </div>
 
       <div className="text-center text-sm text-muted-foreground mt-8">
-        <p>By: Nguyen Vinh Khang</p>
+        <p>By: Nguyen Vinh Khang&apos;s Team</p>
       </div>
 
       <Dialog open={!!selectedCountry} onOpenChange={(open) => !open && setSelectedCountry(null)}>
@@ -410,7 +410,7 @@ JPN,2016,AP,PATN,22000,Japan`
             />
           )}
           <DialogClose className="absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden">
-            <X className="h-4 w-4" />
+            <X className="size-4" />
             <span className="sr-only">Close</span>
           </DialogClose>
         </DialogContent>
@@ -438,7 +438,7 @@ function MetricCard({ title, value, icon, color }: MetricCardProps) {
       <div className="p-4 relative">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center">
-            <div className="rounded-full flex-shrink-0 p-1">
+            <div className="rounded-full shrink-0 p-1">
               <div style={{ color }}>{icon}</div>
             </div>
             <div className="min-w-0">

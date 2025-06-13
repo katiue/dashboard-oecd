@@ -23,7 +23,7 @@ export function Leaderboard({ countries, loading, onCountryClick }: LeaderboardP
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <div className="animate-spin rounded-full size-12 border-t-2 border-b-2 border-primary mx-auto"></div>
           <div className="text-muted-foreground">Loading leaderboard data...</div>
         </div>
       </div>
@@ -35,7 +35,7 @@ export function Leaderboard({ countries, loading, onCountryClick }: LeaderboardP
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center space-y-2">
-          <Trophy className="h-12 w-12 text-muted-foreground mx-auto" />
+          <Trophy className="size-12 text-muted-foreground mx-auto" />
           <div className="text-xl font-medium">No data available</div>
           <div className="text-muted-foreground">Try changing your filters</div>
         </div>
@@ -62,7 +62,7 @@ export function Leaderboard({ countries, loading, onCountryClick }: LeaderboardP
           <div className="text-2xl font-bold text-[#C0C0C0]">2</div>
           <div className="text-sm font-medium">{topThree[1]?.value.toLocaleString()}</div>
           <div className="bg-[#C0C0C0] h-32 w-24 rounded-t-lg flex items-center justify-center">
-            <Trophy className="h-8 w-8 text-white" />
+            <Trophy className="size-8 text-white" />
           </div>
         </div>
 
@@ -76,7 +76,7 @@ export function Leaderboard({ countries, loading, onCountryClick }: LeaderboardP
           <div className="text-3xl font-bold text-[#FFD700]">1</div>
           <div className="text-lg font-medium">{topThree[0]?.value.toLocaleString()}</div>
           <div className="bg-[#FFD700] h-40 w-28 rounded-t-lg flex items-center justify-center">
-            <Trophy className="h-10 w-10 text-white" />
+            <Trophy className="size-10 text-white" />
           </div>
         </div>
 
@@ -90,7 +90,7 @@ export function Leaderboard({ countries, loading, onCountryClick }: LeaderboardP
           <div className="text-2xl font-bold text-[#CD7F32]">3</div>
           <div className="text-sm font-medium">{topThree[2]?.value.toLocaleString()}</div>
           <div className="bg-[#CD7F32] h-24 w-24 rounded-t-lg flex items-center justify-center">
-            <Trophy className="h-8 w-8 text-white" />
+            <Trophy className="size-8 text-white" />
           </div>
         </div>
       </div>

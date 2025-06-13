@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label, className }: any) => {
         <p className="font-medium text-foreground mb-1">{`Year: ${label}`}</p>
         {payload.map((entry: any, index: number) => (
           <div key={`item-${index}`} className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
+            <div className="size-3 rounded-full" style={{ backgroundColor: entry.color }} />
             <p className="text-muted-foreground">
               {entry.name}: <span className="font-medium text-foreground">{entry.value.toLocaleString()} patents</span>
             </p>
@@ -95,25 +95,25 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 text-4xl">
+          <div className="flex items-center justify-center size-16 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 text-4xl">
             {country.flag}
           </div>
           <div>
             <h2 className="text-2xl font-bold">{country.name}</h2>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline" className="flex items-center gap-1">
-                <Globe2 className="h-3 w-3" />
+                <Globe2 className="size-3" />
                 {country.region}
               </Badge>
               <Badge variant="secondary" className="flex items-center gap-1">
-                <Award className="h-3 w-3" />
+                <Award className="size-3" />
                 Rank #{country.rank}
               </Badge>
             </div>
           </div>
         </div>
         <Button variant="outline" size="sm" className="gap-1">
-          <Share2 className="h-4 w-4" />
+          <Share2 className="size-4" />
           Share
         </Button>
       </div>
@@ -130,7 +130,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
               </div>
             </div>
             <div className="bg-blue-100 dark:bg-blue-800/30 p-2 rounded-full">
-              <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <BarChart3 className="size-5 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </Card>
@@ -143,7 +143,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
               <div className="text-xs text-muted-foreground mt-1">Population: {population}M</div>
             </div>
             <div className="bg-green-100 dark:bg-green-800/30 p-2 rounded-full">
-              <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <Users className="size-5 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </Card>
