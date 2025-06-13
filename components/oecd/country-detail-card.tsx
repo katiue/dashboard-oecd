@@ -212,7 +212,7 @@ export function CountryDetailCard({ country, yearRange, trendData, peerData }: C
             </div>
             <div className="mt-4 text-sm text-muted-foreground">
               <p>
-                {country.name}'s patent applications {growthIsPositive ? "increased" : "decreased"} by{" "}
+                {country.name}&apos;s patent applications {growthIsPositive ? "increased" : "decreased"} by{" "}
                 <span className={growthIsPositive ? "text-green-600" : "text-red-600"}>
                   {Math.abs(growthRate).toFixed(1)}%
                 </span>{" "}
